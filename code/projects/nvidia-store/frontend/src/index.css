@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@theme {
+  --color-nvidia: #76b900;
+}
