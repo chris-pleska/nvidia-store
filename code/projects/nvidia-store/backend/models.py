@@ -26,3 +26,26 @@ class Product(db.Model):
             "image_url": self.image_url,
             "specs": self.specs,
         }
+
+
+class OpenSourceModel(db.Model):
+    __tablename__ = "open_source_models"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    developer_lab = db.Column(db.String(200), nullable=False)
+    license = db.Column(db.String(100), nullable=False)
+    param_count_billions = db.Column(db.Integer)
+    context_window = db.Column(db.Integer)
+    short_description = db.Column(db.Text)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "developer_lab": self.developer_lab,
+            "license": self.license,
+            "param_count_billions": self.param_count_billions,
+            "context_window": self.context_window,
+            "short_description": self.short_description,
+        }

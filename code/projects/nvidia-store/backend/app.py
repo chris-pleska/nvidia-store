@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from sqlalchemy import text
 
 from extensions import db
-from models import Product
+from models import OpenSourceModel, Product
 
 load_dotenv()
 
@@ -35,6 +35,12 @@ def db_check():
 def get_products():
     products = Product.query.all()
     return jsonify([p.to_dict() for p in products])
+
+
+@app.route("/api/models")
+def get_models():
+    models = OpenSourceModel.query.all()
+    return jsonify([m.to_dict() for m in models])
 
 
 if __name__ == "__main__":
