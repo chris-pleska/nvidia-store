@@ -1,5 +1,13 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import CoolingDiagram from "../components/diagrams/CoolingDiagram.jsx";
+import CpuDiagram from "../components/diagrams/CpuDiagram.jsx";
+import GpuDiagram from "../components/diagrams/GpuDiagram.jsx";
+import MotherboardDiagram from "../components/diagrams/MotherboardDiagram.jsx";
+import NetworkingDiagram from "../components/diagrams/NetworkingDiagram.jsx";
+import PowerSupplyDiagram from "../components/diagrams/PowerSupplyDiagram.jsx";
+import RamVsVramDiagram from "../components/diagrams/RamVsVramDiagram.jsx";
+import StorageDiagram from "../components/diagrams/StorageDiagram.jsx";
 import DesktopGpuIcon from "../components/icons/DesktopGpuIcon.jsx";
 import CoolingIcon from "../components/icons/CoolingIcon.jsx";
 import CpuIcon from "../components/icons/CpuIcon.jsx";
@@ -14,6 +22,7 @@ const SECTIONS = [
     slug: "gpu",
     label: "GPU",
     Icon: DesktopGpuIcon,
+    Diagram: GpuDiagram,
     definition: "The chip that does the actual AI work.",
     paragraph:
       "Originally built to draw video game graphics, GPUs turned out to be perfect for AI because both jobs involve doing millions of small calculations at once.",
@@ -25,6 +34,7 @@ const SECTIONS = [
     slug: "cpu",
     label: "CPU",
     Icon: CpuIcon,
+    Diagram: CpuDiagram,
     definition: "The computer's general-purpose brain.",
     paragraph:
       "Handles everything that isn't the AI math itself: running the operating system, loading data, coordinating the GPUs.",
@@ -35,6 +45,7 @@ const SECTIONS = [
     slug: "ram-vs-vram",
     label: "RAM vs VRAM",
     Icon: RamIcon,
+    Diagram: RamVsVramDiagram,
     definition: "Two different memories that are easy to confuse.",
     paragraph:
       "RAM is the computer's general workspace; VRAM is memory built into the GPU itself. An AI model must fit in VRAM to run at full speed — that's why every product here lists VRAM, and why our Model Advisor math is all about it.",
@@ -45,6 +56,7 @@ const SECTIONS = [
     slug: "storage",
     label: "Storage",
     Icon: StorageIcon,
+    Diagram: StorageDiagram,
     definition: "Where models and data live when they're not running.",
     paragraph:
       "SSDs hold the model files (often hundreds of gigabytes each) and training data.",
@@ -55,6 +67,7 @@ const SECTIONS = [
     slug: "power-supply",
     label: "Power Supply",
     Icon: PowerSupplyIcon,
+    Diagram: PowerSupplyDiagram,
     definition: "Converts wall power into what the components use.",
     paragraph: "Every watt a GPU draws has to come through here, with headroom.",
     whenItMatters:
@@ -64,6 +77,7 @@ const SECTIONS = [
     slug: "motherboard",
     label: "Motherboard",
     Icon: MotherboardIcon,
+    Diagram: MotherboardDiagram,
     definition: "The board everything plugs into.",
     paragraph:
       "Decides how many GPUs fit, how fast they talk to each other, and how much RAM you can add.",
@@ -74,6 +88,7 @@ const SECTIONS = [
     slug: "networking",
     label: "Networking",
     Icon: NetworkingIcon,
+    Diagram: NetworkingDiagram,
     definition: "How machines talk to each other.",
     paragraph:
       "Regular office networking is fine for browsing; AI clusters use special high-speed links — NVLink between GPUs, InfiniBand between servers — so many GPUs can act like one big one.",
@@ -85,6 +100,7 @@ const SECTIONS = [
     slug: "cooling",
     label: "Cooling",
     Icon: CoolingIcon,
+    Diagram: CoolingDiagram,
     definition: "Getting the heat back out.",
     paragraph:
       "All those watts become heat. Desktops use fans; dense AI racks generate so much heat that they're liquid-cooled — pipes carry coolant directly to the chips.",
@@ -134,7 +150,16 @@ export default function Learn() {
 
       <div className="mt-8 flex flex-col gap-10">
         {SECTIONS.map(
-          ({ slug, label, Icon, definition, paragraph, whenItMatters, link }) => (
+          ({
+            slug,
+            label,
+            Icon,
+            Diagram,
+            definition,
+            paragraph,
+            whenItMatters,
+            link,
+          }) => (
             <section
               key={slug}
               id={slug}
@@ -147,6 +172,10 @@ export default function Learn() {
                 <h2 className="text-xl font-semibold text-neutral-100">
                   {label}
                 </h2>
+              </div>
+
+              <div className="mt-4">
+                <Diagram />
               </div>
 
               <p className="mt-4 font-semibold text-neutral-100">
