@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CoolingDiagram from "../components/diagrams/CoolingDiagram.jsx";
 import CpuDiagram from "../components/diagrams/CpuDiagram.jsx";
@@ -14,8 +14,10 @@ import CpuIcon from "../components/icons/CpuIcon.jsx";
 import MotherboardIcon from "../components/icons/MotherboardIcon.jsx";
 import NetworkingIcon from "../components/icons/NetworkingIcon.jsx";
 import PowerSupplyIcon from "../components/icons/PowerSupplyIcon.jsx";
+import RackSystemIcon from "../components/icons/RackSystemIcon.jsx";
 import RamIcon from "../components/icons/RamIcon.jsx";
 import StorageIcon from "../components/icons/StorageIcon.jsx";
+import { API_BASE_URL } from "../config.js";
 
 const SECTIONS = [
   {
@@ -97,6 +99,12 @@ const SECTIONS = [
     link: { to: "/help-me-choose", label: "Help Me Choose" },
   },
   {
+    slug: "clusters",
+    label: "What's a Cluster?",
+    Icon: RackSystemIcon,
+    isClusterSection: true,
+  },
+  {
     slug: "cooling",
     label: "Cooling",
     Icon: CoolingIcon,
@@ -111,6 +119,7 @@ const SECTIONS = [
 
 export default function Learn() {
   const location = useLocation();
+  const [clusterExplainer, setClusterExplainer] = useState(null);
 
   useEffect(() => {
     if (!location.hash) return;
@@ -120,6 +129,13 @@ export default function Learn() {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [location.hash]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/cluster-explainer`)
+      .then((res) => res.json())
+      .then(setClusterExplainer)
+      .catch(() => setClusterExplainer(null));
+  }, []);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -159,6 +175,7 @@ export default function Learn() {
             paragraph,
             whenItMatters,
             link,
+            isClusterSection,
           }) => (
             <section
               key={slug}
@@ -174,22 +191,49 @@ export default function Learn() {
                 </h2>
               </div>
 
-              <div className="mt-4">
-                <Diagram />
-              </div>
+              {Diagram && (
+                <div className="mt-4">
+                  <Diagram />
+                </div>
+              )}
 
-              <p className="mt-4 font-semibold text-neutral-100">
-                {definition}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                {paragraph}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                <span className="font-medium text-nvidia">
-                  When it matters for AI:
-                </span>{" "}
-                {whenItMatters}
-              </p>
+              {isClusterSection ? (
+                clusterExplainer ? (
+                  <>
+                    <p className="mt-4 font-semibold text-neutral-100">
+                      {clusterExplainer.definition}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                      {clusterExplainer.real_clustering}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                      {clusterExplainer.honest_contrast}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                      When we show a cluster build, we add up the memory,
+                      power, and price of every unit — that combined memory
+                      is what determines which models fit.
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-4 text-sm text-neutral-500">Loading...</p>
+                )
+              ) : (
+                <>
+                  <p className="mt-4 font-semibold text-neutral-100">
+                    {definition}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                    {paragraph}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                    <span className="font-medium text-nvidia">
+                      When it matters for AI:
+                    </span>{" "}
+                    {whenItMatters}
+                  </p>
+                </>
+              )}
 
               {link && (
                 <Link

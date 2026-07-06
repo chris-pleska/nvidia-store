@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import EstimateBadge from "../components/EstimateBadge.jsx";
 import { API_BASE_URL } from "../config.js";
 
@@ -20,6 +21,7 @@ function productToItem(product) {
     powerIsEstimate: product.power_is_estimate,
     homesEquivalent: product.power_context?.homes_equivalent ?? null,
     machineLabel: "Single machine",
+    isCluster: false,
   };
 }
 
@@ -39,6 +41,7 @@ function modelToBuildItem(model) {
     homesEquivalent: rec.combined_power_context?.homes_equivalent ?? null,
     machineLabel:
       rec.units_needed === 1 ? "Single machine" : `Cluster of ${rec.units_needed}`,
+    isCluster: rec.units_needed > 1,
   };
 }
 
@@ -216,6 +219,14 @@ export default function Compare() {
                       </td>
                       <td className="px-4 py-3 text-neutral-400">
                         {item.machineLabel}
+                        {item.isCluster && (
+                          <Link
+                            to="/learn#clusters"
+                            className="ml-1.5 text-xs text-nvidia hover:underline"
+                          >
+                            What's a cluster?
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))}

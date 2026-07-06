@@ -31,18 +31,19 @@ def humanize_power(watts):
 
 CLUSTER_EXPLAINER = {
     "definition": (
-        "A cluster is multiple GPUs or machines connected together and "
-        "coordinated to work on the same task as if they were one larger "
-        "system."
+        "A cluster is multiple computers wired together to act like one "
+        "bigger machine."
     ),
-    "honest_difference": (
-        "Real datacenter clustering (like NVLink-connected H100s or a GB200 "
-        "NVL72 rack) uses dedicated high-speed interconnects so GPUs can "
-        "share memory and work together with very low latency. Plugging "
-        "multiple desktop GPUs into one PC does not create this — each card "
-        "runs mostly on its own over the much slower PCIe bus, with far more "
-        "communication overhead and no unified memory pool. A pile of "
-        "desktop cards is not a real cluster."
+    "real_clustering": (
+        "Real datacenter clustering — NVLink between GPUs, InfiniBand "
+        "between servers — is fast enough that many GPUs behave like one "
+        "big GPU with combined memory. This is how a rack runs a model "
+        "bigger than any single GPU's memory."
+    ),
+    "honest_contrast": (
+        "Several desktop cards in one PC only talk over regular PCIe, far "
+        "slower and with no unified memory — not something we'd sell as a "
+        "production cluster build."
     ),
 }
 
@@ -195,6 +196,11 @@ def recommend_midsize():
             "cluster_explainer": CLUSTER_EXPLAINER,
         }
     )
+
+
+@app.route("/api/cluster-explainer")
+def get_cluster_explainer():
+    return jsonify(CLUSTER_EXPLAINER)
 
 
 QUOTE_REQUEST_REQUIRED_FIELDS = [

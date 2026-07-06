@@ -20,6 +20,7 @@ export default function Shop() {
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState("loading");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -33,6 +34,16 @@ export default function Shop() {
         setStatus("loaded");
       })
       .catch(() => setStatus("error"));
+  }, []);
+
+  useEffect(() => {
+    function handleScroll() {
+      setShowBackToTop(window.scrollY > 400);
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -51,6 +62,22 @@ export default function Shop() {
         : b.price_usd - a.price_usd,
     );
   }
+
+  const categoryGroups = CATEGORIES.map((category) => {
+    const categoryProducts = products.filter(
+      (product) => product.category === category,
+    );
+    const cheapestPrice = categoryProducts.length
+      ? Math.min(...categoryProducts.map((product) => product.price_usd))
+      : null;
+    return { category, categoryProducts, cheapestPrice };
+  }).filter((group) => group.categoryProducts.length > 0);
+
+  const sortedCategoryGroups = [...categoryGroups].sort((a, b) =>
+    sortDirection === "asc"
+      ? a.cheapestPrice - b.cheapestPrice
+      : b.cheapestPrice - a.cheapestPrice,
+  );
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -94,41 +121,39 @@ export default function Shop() {
             </button>
           </div>
 
-          {CATEGORIES.map((category) => {
-            const categoryProducts = products.filter(
-              (product) => product.category === category,
-            );
+          {sortedCategoryGroups.map(({ category, categoryProducts }) => (
+            <section
+              key={category}
+              id={slugifyCategory(category)}
+              className="mt-10 scroll-mt-24"
+            >
+              <div className="flex items-center gap-2 border-b border-neutral-800 pb-3">
+                <span className="text-nvidia">
+                  <CategoryIcon category={category} size={24} />
+                </span>
+                <h2 className="text-lg font-semibold text-neutral-100">
+                  {category}
+                </h2>
+              </div>
 
-            if (categoryProducts.length === 0) return null;
-
-            return (
-              <section
-                key={category}
-                id={slugifyCategory(category)}
-                className="mt-10 scroll-mt-24"
-              >
-                <div className="flex items-center gap-2 border-b border-neutral-800 pb-3">
-                  <span className="text-nvidia">
-                    <CategoryIcon category={category} size={24} />
-                  </span>
-                  <h2 className="text-lg font-semibold text-neutral-100">
-                    {category}
-                  </h2>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {sortByPrice(categoryProducts).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {sortByPrice(categoryProducts).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          ))}
 
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-6 left-6 z-40 rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs text-neutral-300 shadow-lg transition-colors hover:border-nvidia/50 hover:text-nvidia"
+            aria-hidden={!showBackToTop}
+            tabIndex={showBackToTop ? 0 : -1}
+            className={`fixed bottom-6 left-6 z-40 rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs text-neutral-300 shadow-lg transition-opacity duration-300 hover:border-nvidia/50 hover:text-nvidia ${
+              showBackToTop
+                ? "opacity-100"
+                : "pointer-events-none opacity-0"
+            }`}
           >
             ↑ Back to top
           </button>

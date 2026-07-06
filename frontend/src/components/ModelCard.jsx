@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import SpecTerm from "./SpecTerm.jsx";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -74,6 +75,14 @@ export default function ModelCard({ model }) {
                 ).toFixed(2)}{" "}
                 → rounded up to {recommended_product.units_needed} GPUs
               </p>
+            )}
+            {recommended_product.units_needed > 1 && (
+              <Link
+                to="/learn#clusters"
+                className="mt-1 inline-block text-xs text-nvidia hover:underline"
+              >
+                What's a cluster?
+              </Link>
             )}
           </>
         ) : (

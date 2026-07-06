@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import CategoryIcon from "./CategoryIcon.jsx";
 import EstimateBadge from "./EstimateBadge.jsx";
 import SpecTerm from "./SpecTerm.jsx";
@@ -64,6 +65,15 @@ export default function ProductCard({ product }) {
       </div>
 
       <p className="mt-4 text-sm text-neutral-400">{description}</p>
+
+      {category === "Rack System" && (
+        <Link
+          to="/learn#clusters"
+          className="mt-2 inline-block text-xs text-nvidia hover:underline"
+        >
+          What's a cluster?
+        </Link>
+      )}
 
       {source_note && (
         <p className="mt-3 border-t border-neutral-800 pt-3 text-xs text-neutral-500">

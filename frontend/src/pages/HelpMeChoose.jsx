@@ -190,7 +190,13 @@ export default function HelpMeChoose() {
             {result.cluster_explainer.definition}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-            {result.cluster_explainer.honest_difference}
+            {result.cluster_explainer.honest_contrast}{" "}
+            <Link
+              to="/learn#clusters"
+              className="text-nvidia hover:underline"
+            >
+              Learn more about clusters
+            </Link>
           </p>
         </div>
       )}
