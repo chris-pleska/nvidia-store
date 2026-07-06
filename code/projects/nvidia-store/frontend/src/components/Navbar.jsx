@@ -4,7 +4,7 @@ import BackendStatus from "./BackendStatus.jsx";
 const LINKS = [
   { label: "Home", to: "/" },
   { label: "Shop", to: "/shop" },
-  { label: "Model Advisor", to: null },
+  { label: "Model Advisor", to: "/model-advisor" },
   { label: "Help Me Choose", to: null },
   { label: "Requests", to: null },
 ];

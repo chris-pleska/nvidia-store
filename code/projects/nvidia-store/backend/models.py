@@ -48,4 +48,9 @@ class OpenSourceModel(db.Model):
             "param_count_billions": self.param_count_billions,
             "context_window": self.context_window,
             "short_description": self.short_description,
+            "required_memory_gb": (
+                round(self.param_count_billions * 1 * 1.2)
+                if self.param_count_billions is not None
+                else None
+            ),
         }
