@@ -133,6 +133,42 @@ export default function HelpMeChoose() {
           </p>
         </div>
       )}
+
+      {status === "loaded" && result?.cluster_explainer && (
+        <div className="mt-6 rounded-lg border border-neutral-800 bg-neutral-900 p-6">
+          <h3 className="text-lg font-semibold text-neutral-100">
+            What's a <span className="text-nvidia">cluster</span>?
+          </h3>
+
+          <div className="mt-4 flex flex-wrap gap-6 text-sm text-neutral-400">
+            <div>
+              <span className="block text-neutral-500">Combined VRAM</span>
+              <SpecTerm term="vram" value={`${result.combined_vram_gb}GB`} />
+            </div>
+            <div>
+              <span className="block text-neutral-500">Combined Power</span>
+              <SpecTerm
+                term="power"
+                value={`${result.combined_power_watts}W`}
+              />
+            </div>
+            <div>
+              <span className="block text-neutral-500">Total Price</span>
+              <SpecTerm
+                term="price"
+                value={currencyFormatter.format(result.total_price)}
+              />
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm leading-relaxed text-neutral-300">
+            {result.cluster_explainer.definition}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+            {result.cluster_explainer.honest_difference}
+          </p>
+        </div>
+      )}
     </main>
   );
 }

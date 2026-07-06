@@ -15,6 +15,37 @@ from models import OpenSourceModel, Product
 # count (e.g. 1x rack always beats Nx individual GPUs) regardless of cost.
 RECOMMENDATION_CANDIDATE_CATEGORIES = ["Datacenter GPU"]
 
+HOME_CONTINUOUS_DRAW_WATTS = 1200
+EV_BATTERY_KWH = 90
+
+
+def humanize_power(watts):
+    if watts is None:
+        return None
+
+    return {
+        "homes_equivalent": round(watts / HOME_CONTINUOUS_DRAW_WATTS, 1),
+        "ev_battery_fraction": round((watts / 1000) / EV_BATTERY_KWH, 4),
+    }
+
+
+CLUSTER_EXPLAINER = {
+    "definition": (
+        "A cluster is multiple GPUs or machines connected together and "
+        "coordinated to work on the same task as if they were one larger "
+        "system."
+    ),
+    "honest_difference": (
+        "Real datacenter clustering (like NVLink-connected H100s or a GB200 "
+        "NVL72 rack) uses dedicated high-speed interconnects so GPUs can "
+        "share memory and work together with very low latency. Plugging "
+        "multiple desktop GPUs into one PC does not create this — each card "
+        "runs mostly on its own over the much slower PCIe bus, with far more "
+        "communication overhead and no unified memory pool. A pile of "
+        "desktop cards is not a real cluster."
+    ),
+}
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -40,7 +71,14 @@ def db_check():
 @app.route("/api/products")
 def get_products():
     products = Product.query.all()
-    return jsonify([p.to_dict() for p in products])
+
+    result = []
+    for product in products:
+        data = product.to_dict()
+        data["power_context"] = humanize_power(data["power_watts"])
+        result.append(data)
+
+    return jsonify(result)
 
 
 def recommend_product(required_memory_gb, candidates):
@@ -96,9 +134,12 @@ def recommend_startup():
     if product is None:
         return jsonify({"error": "recommended product not found"}), 404
 
+    product_data = product.to_dict()
+    product_data["power_context"] = humanize_power(product_data["power_watts"])
+
     return jsonify(
         {
-            "product": product.to_dict(),
+            "product": product_data,
             "quantity": 1,
             "rationale": (
                 "Enough VRAM to run mid-size open models locally, no data "
@@ -109,6 +150,14 @@ def recommend_startup():
     )
 
 
+def calculate_cluster_stats(product, quantity):
+    return {
+        "combined_vram_gb": product.vram_gb * quantity,
+        "combined_power_watts": product.power_watts * quantity,
+        "total_price": float(product.price_usd) * quantity,
+    }
+
+
 @app.route("/api/recommend/midsize")
 def recommend_midsize():
     product = Product.query.filter_by(name="NVIDIA H100 SXM").first()
@@ -116,15 +165,22 @@ def recommend_midsize():
         return jsonify({"error": "recommended product not found"}), 404
 
     quantity = 4
+    stats = calculate_cluster_stats(product, quantity)
+
+    product_data = product.to_dict()
+    product_data["power_context"] = humanize_power(product_data["power_watts"])
+
     return jsonify(
         {
-            "product": product.to_dict(),
+            "product": product_data,
             "quantity": quantity,
             "rationale": (
                 "Enough combined VRAM to run large open-source models with "
                 "room for multiple concurrent workloads."
             ),
-            "total_price": float(product.price_usd) * quantity,
+            **stats,
+            "combined_power_context": humanize_power(stats["combined_power_watts"]),
+            "cluster_explainer": CLUSTER_EXPLAINER,
         }
     )
 
