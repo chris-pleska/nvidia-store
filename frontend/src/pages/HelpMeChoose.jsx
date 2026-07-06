@@ -1,0 +1,138 @@
+import { useState } from "react";
+import SpecTerm from "../components/SpecTerm.jsx";
+import { API_BASE_URL } from "../config.js";
+
+const PATHS = [
+  {
+    key: "startup",
+    title: "I'm a small startup",
+    subtitle:
+      "Cost-effective way to experiment with AI, no huge upfront spend.",
+    endpoint: `${API_BASE_URL}/api/recommend/startup`,
+  },
+  {
+    key: "midsize",
+    title: "I'm a mid-size company",
+    subtitle: "Serve real production workloads with room to grow.",
+    endpoint: `${API_BASE_URL}/api/recommend/midsize`,
+  },
+];
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+export default function HelpMeChoose() {
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [result, setResult] = useState(null);
+  const [status, setStatus] = useState("idle");
+
+  function handleSelect(path) {
+    setSelectedKey(path.key);
+    setStatus("loading");
+    setResult(null);
+
+    fetch(path.endpoint)
+      .then((res) => {
+        if (!res.ok) throw new Error("bad response");
+        return res.json();
+      })
+      .then((data) => {
+        setResult(data);
+        setStatus("loaded");
+      })
+      .catch(() => setStatus("error"));
+  }
+
+  return (
+    <main className="mx-auto max-w-4xl px-6 py-12">
+      <h1 className="text-3xl font-bold">
+        Help Me <span className="text-nvidia">Choose</span>
+      </h1>
+      <p className="mt-2 text-neutral-400">
+        Tell us where you're starting from, and we'll recommend a build.
+      </p>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {PATHS.map((path) => (
+          <button
+            key={path.key}
+            type="button"
+            onClick={() => handleSelect(path)}
+            className={`rounded-lg border p-5 text-left transition-colors ${
+              selectedKey === path.key
+                ? "border-nvidia bg-neutral-900"
+                : "border-neutral-800 bg-neutral-900 hover:border-nvidia/50"
+            }`}
+          >
+            <h2 className="text-lg font-semibold text-neutral-100">
+              {path.title}
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">{path.subtitle}</p>
+          </button>
+        ))}
+      </div>
+
+      {status === "loading" && (
+        <p className="mt-8 text-neutral-400">Finding a recommendation...</p>
+      )}
+
+      {status === "error" && (
+        <p className="mt-8 text-red-400">
+          Couldn't reach the backend. Is the Flask server running?
+        </p>
+      )}
+
+      {status === "loaded" && result && (
+        <div className="mt-8 rounded-lg border border-neutral-800 bg-neutral-900 p-6">
+          <p className="text-xs uppercase tracking-wide text-neutral-500">
+            Recommended Build
+          </p>
+          <h3 className="mt-1 text-xl font-semibold text-neutral-100">
+            {result.quantity ?? 1}x {result.product.name}
+          </h3>
+
+          <div className="mt-4 flex flex-wrap gap-6 text-sm text-neutral-400">
+            <div>
+              <span className="block text-neutral-500">Price per unit</span>
+              <SpecTerm
+                term="price"
+                value={currencyFormatter.format(result.product.price_usd)}
+              />
+            </div>
+            <div>
+              <span className="block text-neutral-500">Power</span>
+              <SpecTerm
+                term="power"
+                value={
+                  result.product.power_watts != null
+                    ? `${result.product.power_watts}W`
+                    : "—"
+                }
+              />
+            </div>
+            <div>
+              <span className="block text-neutral-500">VRAM</span>
+              <SpecTerm
+                term="vram"
+                value={
+                  result.product.vram_gb != null
+                    ? `${result.product.vram_gb}GB`
+                    : "—"
+                }
+              />
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm text-neutral-400">{result.rationale}</p>
+
+          <p className="mt-4 text-2xl font-bold text-nvidia">
+            Total: {currencyFormatter.format(result.total_price)}
+          </p>
+        </div>
+      )}
+    </main>
+  );
+}
