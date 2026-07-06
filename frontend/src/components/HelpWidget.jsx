@@ -1,5 +1,6 @@
 import { useState } from "react";
 import BotIcon from "./icons/BotIcon.jsx";
+import HelpWidgetGuide from "./HelpWidgetGuide.jsx";
 
 export default function HelpWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,9 @@ export default function HelpWidget() {
               ✕
             </button>
           </div>
-          <div className="min-h-[160px] p-4" />
+          <div className="min-h-[160px] p-4">
+            <HelpWidgetGuide onNavigate={() => setIsOpen(false)} />
+          </div>
         </div>
       )}
 

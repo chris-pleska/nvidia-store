@@ -1,6 +1,5 @@
 import { useState } from "react";
-import Modal from "../components/Modal.jsx";
-import QuoteRequestForm from "../components/QuoteRequestForm.jsx";
+import { Link } from "react-router-dom";
 import SpecTerm from "../components/SpecTerm.jsx";
 import { API_BASE_URL } from "../config.js";
 import { formatPowerComparison } from "../utils/formatPowerComparison.js";
@@ -31,13 +30,11 @@ export default function HelpMeChoose() {
   const [selectedKey, setSelectedKey] = useState(null);
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("idle");
-  const [showQuoteForm, setShowQuoteForm] = useState(false);
 
   function handleSelect(path) {
     setSelectedKey(path.key);
     setStatus("loading");
     setResult(null);
-    setShowQuoteForm(false);
 
     fetch(path.endpoint)
       .then((res) => {
@@ -142,25 +139,19 @@ export default function HelpMeChoose() {
             Total: {currencyFormatter.format(result.total_price)}
           </p>
 
-          <button
-            type="button"
-            onClick={() => setShowQuoteForm(true)}
-            className="mt-4 rounded-md border border-nvidia/40 px-3 py-2 text-sm font-medium text-nvidia transition-colors hover:bg-nvidia/10"
-          >
-            Request a Quote
-          </button>
-        </div>
-      )}
-
-      {showQuoteForm && result && (
-        <Modal onClose={() => setShowQuoteForm(false)}>
-          <QuoteRequestForm
-            build={{
-              description: `${result.quantity ?? 1}x ${result.product.name}`,
-              totalPrice: result.total_price,
+          <Link
+            to="/request-quote"
+            state={{
+              build: {
+                description: `${result.quantity ?? 1}x ${result.product.name}`,
+                totalPrice: result.total_price,
+              },
             }}
-          />
-        </Modal>
+            className="mt-4 inline-block rounded-md border border-nvidia/40 px-3 py-2 text-sm font-medium text-nvidia transition-colors hover:bg-nvidia/10"
+          >
+            Request this build
+          </Link>
+        </div>
       )}
 
       {status === "loaded" && result?.cluster_explainer && (

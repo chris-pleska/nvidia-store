@@ -26,6 +26,14 @@ export default function ModelAdvisor() {
       <h1 className="text-3xl font-bold">
         Model <span className="text-nvidia">Advisor</span>
       </h1>
+      <p className="mt-2 max-w-3xl text-neutral-400">
+        These are "open-weight" models — unlike closed AI services you just
+        chat with online, anyone can download the actual trained model file
+        (typically from a site like Hugging Face) and run it themselves.
+        "Running" one means loading it onto GPUs with enough memory to hold
+        the whole thing at once, which is exactly what the required memory
+        and recommended build below are calculating for each model.
+      </p>
 
       {status === "loading" && (
         <p className="mt-6 text-neutral-400">Loading models...</p>

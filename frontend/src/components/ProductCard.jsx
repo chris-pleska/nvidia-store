@@ -1,7 +1,4 @@
-import { useState } from "react";
 import CategoryIcon from "./CategoryIcon.jsx";
-import Modal from "./Modal.jsx";
-import QuoteRequestForm from "./QuoteRequestForm.jsx";
 import SpecTerm from "./SpecTerm.jsx";
 import { formatPowerComparison } from "../utils/formatPowerComparison.js";
 
@@ -21,8 +18,6 @@ export default function ProductCard({ product }) {
     vram_gb,
     description,
   } = product;
-
-  const [showQuoteForm, setShowQuoteForm] = useState(false);
 
   return (
     <div className="flex flex-col rounded-lg border border-neutral-800 bg-neutral-900 p-5 transition-colors hover:border-nvidia/50">
@@ -61,25 +56,6 @@ export default function ProductCard({ product }) {
       </div>
 
       <p className="mt-4 text-sm text-neutral-400">{description}</p>
-
-      <button
-        type="button"
-        onClick={() => setShowQuoteForm(true)}
-        className="mt-4 rounded-md border border-nvidia/40 px-3 py-2 text-sm font-medium text-nvidia transition-colors hover:bg-nvidia/10"
-      >
-        Request a Quote
-      </button>
-
-      {showQuoteForm && (
-        <Modal onClose={() => setShowQuoteForm(false)}>
-          <QuoteRequestForm
-            build={{
-              description: `1x ${name}`,
-              totalPrice: price_usd,
-            }}
-          />
-        </Modal>
-      )}
     </div>
   );
 }

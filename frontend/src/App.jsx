@@ -5,6 +5,7 @@ import HelpMeChoose from "./pages/HelpMeChoose.jsx";
 import Home from "./pages/Home.jsx";
 import ModelAdvisor from "./pages/ModelAdvisor.jsx";
 import Requests from "./pages/Requests.jsx";
+import RequestQuote from "./pages/RequestQuote.jsx";
 import Shop from "./pages/Shop.jsx";
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/help-me-choose" element={<HelpMeChoose />} />
         <Route path="/model-advisor" element={<ModelAdvisor />} />
         <Route path="/requests" element={<Requests />} />
+        <Route path="/request-quote" element={<RequestQuote />} />
       </Routes>
       <HelpWidget />
     </div>

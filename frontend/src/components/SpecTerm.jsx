@@ -30,6 +30,20 @@ const SPEC_INFO = {
     deep:
       "Category roughly predicts the support model, cooling requirements, and how the product is bought — desktop cards ship retail, while server and rack systems are typically quoted and installed by a vendor.",
   },
+  parameters: {
+    label: "Parameters",
+    short:
+      "The number of adjustable values in the model — roughly, how \"big\" or capable it is.",
+    deep:
+      "More parameters generally means better capability, but also more memory and compute needed to run it — that's exactly what the required memory calculation below is based on.",
+  },
+  license: {
+    label: "License",
+    short:
+      "A permissive open-source license — you can download, run, and modify this model freely.",
+    deep:
+      "MIT is one of the most permissive licenses in use — unlike some other open licenses, it doesn't require you to share your changes back or restrict commercial use.",
+  },
 };
 
 const EDGE_MARGIN = 12;
