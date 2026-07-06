@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import HelpWidget from "./components/HelpWidget.jsx";
 import Navbar from "./components/Navbar.jsx";
 import HelpMeChoose from "./pages/HelpMeChoose.jsx";
 import Home from "./pages/Home.jsx";
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/model-advisor" element={<ModelAdvisor />} />
         <Route path="/requests" element={<Requests />} />
       </Routes>
+      <HelpWidget />
     </div>
   );
 }
