@@ -10,8 +10,10 @@ PRODUCTS = [
         power_watts=575,
         vram_gb=32,
         description=(
-            "NVIDIA's flagship consumer GPU, built for high-end gaming and AI "
-            "development on a single desktop."
+            "The card most people mean when they say 'gaming GPU.' The "
+            "fastest thing you can put in a normal desktop PC — great for "
+            "gaming, and enough to experiment with smaller AI models at "
+            "home."
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
@@ -27,8 +29,9 @@ PRODUCTS = [
         power_watts=600,
         vram_gb=96,
         description=(
-            "Workstation-class GPU for professionals running local AI models, "
-            "3D rendering, and simulation without a data center."
+            "A professional workstation card with three times the memory of "
+            "a gaming card. For people who run AI models, 3D rendering, or "
+            "simulations at their desk — no server room required."
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
@@ -44,8 +47,9 @@ PRODUCTS = [
         power_watts=700,
         vram_gb=80,
         description=(
-            "The industry-standard datacenter GPU for large-scale AI training and "
-            "inference, deployed via NVLink in multi-GPU servers."
+            "A single datacenter-grade AI GPU — the kind that gets wired "
+            "into 8-GPU servers. This is the chip that powered the first "
+            "wave of the AI boom."
         ),
         image_url=None,
         specs={"memory_type": "HBM3", "interconnect": "NVLink"},
@@ -62,8 +66,9 @@ PRODUCTS = [
         power_watts=10200,
         vram_gb=640,
         description=(
-            "A complete 8-GPU server appliance combining H100 GPUs, CPUs, "
-            "networking, and storage in one turnkey system for AI training."
+            "A complete 8-GPU AI server — you buy the whole box, plug it "
+            "in, and it works. The standard building block of serious AI "
+            "infrastructure."
         ),
         image_url=None,
         specs={"gpu_count": 8, "gpu_model": "H100"},
@@ -80,8 +85,9 @@ PRODUCTS = [
         power_watts=120000,
         vram_gb=13500,
         description=(
-            "A liquid-cooled, rack-scale system connecting 72 Blackwell GPUs as a "
-            "single unified accelerator for trillion-parameter model training."
+            "A full liquid-cooled rack: 72 GPUs wired together so tightly "
+            "they act like one giant machine. This is what 'AI datacenter' "
+            "actually looks like."
         ),
         image_url=None,
         specs={
@@ -104,10 +110,9 @@ PRODUCTS = [
         power_watts=175,
         vram_gb=24,
         description=(
-            "NVIDIA's flagship mobile GPU, sold only pre-installed in "
-            "gaming/creator laptops rather than as a standalone card — price "
-            "reflects a representative laptop configuration, not the chip "
-            "alone."
+            "The most powerful GPU you can get inside a laptop. Sold only "
+            "pre-installed in gaming and creator laptops — you can't buy "
+            "the chip on its own."
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
@@ -125,9 +130,9 @@ PRODUCTS = [
         power_watts=700,
         vram_gb=141,
         description=(
-            "A memory-upgraded version of the H100 on the same architecture, "
-            "built for large language models that need more than 80GB per "
-            "GPU."
+            "The H100's bigger-memory sibling: same generation, nearly "
+            "twice the memory per chip. Built for AI models too large to "
+            "fit in an H100."
         ),
         image_url=None,
         specs={"memory_type": "HBM3e"},
@@ -141,9 +146,9 @@ PRODUCTS = [
         power_watts=1000,
         vram_gb=180,
         description=(
-            "NVIDIA's current-generation Blackwell datacenter GPU, roughly 4x "
-            "the AI training throughput of the H100 with native FP4 "
-            "precision support."
+            "NVIDIA's current-generation datacenter GPU. Roughly 4x the AI "
+            "training speed of an H100 — this is what new AI datacenters "
+            "are being built around."
         ),
         image_url=None,
         specs={"memory_type": "HBM3e"},
