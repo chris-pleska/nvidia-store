@@ -7,6 +7,7 @@ const LINKS = [
   { label: "Model Advisor", to: "/model-advisor" },
   { label: "Help Me Choose", to: "/help-me-choose" },
   { label: "Requests", to: "/requests" },
+  { label: "Compare", to: "/compare" },
 ];
 
 export default function Navbar() {

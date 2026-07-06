@@ -14,6 +14,7 @@ export default function ModelCard({ model }) {
     param_count_billions,
     required_memory_gb,
     recommended_product,
+    source_note,
   } = model;
 
   return (
@@ -81,6 +82,12 @@ export default function ModelCard({ model }) {
           </p>
         )}
       </div>
+
+      {source_note && (
+        <p className="mt-3 border-t border-neutral-800 pt-3 text-xs text-neutral-500">
+          {source_note}
+        </p>
+      )}
     </div>
   );
 }

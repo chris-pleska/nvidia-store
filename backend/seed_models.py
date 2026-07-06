@@ -13,6 +13,11 @@ MODELS = [
             "A large mixture-of-experts model from Z.ai, ranked among the top "
             "open-weight models for agentic tool use."
         ),
+        source_note=(
+            "The official Hugging Face model card "
+            "(huggingface.co/zai-org/GLM-5.2) lists 753B total parameters "
+            "and an MIT license."
+        ),
     ),
     dict(
         name="DeepSeek V4 Pro",
@@ -24,6 +29,11 @@ MODELS = [
             "DeepSeek's flagship open-weight model, the largest currently "
             "available MIT-licensed model."
         ),
+        source_note=(
+            "The official Hugging Face model card "
+            "(huggingface.co/deepseek-ai) lists 1.6T total parameters and "
+            "an MIT license."
+        ),
     ),
     dict(
         name="DeepSeek V4 Flash",
@@ -34,6 +44,11 @@ MODELS = [
         short_description=(
             "A smaller, faster sibling to V4 Pro, offering strong performance "
             "at a fraction of the hardware cost."
+        ),
+        source_note=(
+            "The official Hugging Face model card "
+            "(huggingface.co/deepseek-ai/DeepSeek-V4-Flash) lists 284B "
+            "parameters and an MIT license."
         ),
     ),
 ]

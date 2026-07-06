@@ -15,6 +15,10 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
+        source_note=(
+            "Specs per NVIDIA's official product page; $1,999 is NVIDIA's "
+            "launch MSRP (street prices often run higher)."
+        ),
     ),
     dict(
         name="NVIDIA RTX PRO 6000 Blackwell (Workstation Edition)",
@@ -28,6 +32,10 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
+        source_note=(
+            "Specs per NVIDIA's product page; price per major workstation "
+            "retailer listings."
+        ),
     ),
     dict(
         name="NVIDIA H100 SXM",
@@ -41,6 +49,11 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "HBM3", "interconnect": "NVLink"},
+        source_note=(
+            "Specs per NVIDIA's datasheet; price is a market estimate — "
+            "NVIDIA doesn't publish list prices for datacenter GPUs."
+        ),
+        price_is_estimate=True,
     ),
     dict(
         name="NVIDIA DGX H100",
@@ -54,6 +67,11 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"gpu_count": 8, "gpu_model": "H100"},
+        source_note=(
+            "Specs per NVIDIA's DGX datasheet; price is a market estimate "
+            "based on reported system sales."
+        ),
+        price_is_estimate=True,
     ),
     dict(
         name="NVIDIA GB200 NVL72",
@@ -72,6 +90,12 @@ PRODUCTS = [
             "cooling": "liquid",
             "memory_architecture": "unified",
         },
+        source_note=(
+            "Specs per NVIDIA's rack datasheet; price and power are market "
+            "estimates — these systems are quoted per-deal."
+        ),
+        price_is_estimate=True,
+        power_is_estimate=True,
     ),
     dict(
         name="NVIDIA RTX 5090 Laptop GPU",
@@ -87,6 +111,12 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "GDDR7"},
+        source_note=(
+            "Specs per NVIDIA's mobile GPU page; price reflects a "
+            "representative laptop configuration, since mobile GPUs aren't "
+            "sold standalone."
+        ),
+        price_is_estimate=True,
     ),
     dict(
         name="NVIDIA H200",
@@ -101,6 +131,8 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "HBM3e"},
+        source_note="Specs per NVIDIA's datasheet; price is a market estimate.",
+        price_is_estimate=True,
     ),
     dict(
         name="NVIDIA B200",
@@ -115,6 +147,8 @@ PRODUCTS = [
         ),
         image_url=None,
         specs={"memory_type": "HBM3e"},
+        source_note="Specs per NVIDIA's datasheet; price is a market estimate.",
+        price_is_estimate=True,
     ),
 ]
 

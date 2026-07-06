@@ -86,6 +86,7 @@ def recommend_product(required_memory_gb, candidates):
         return None
 
     best = None
+    best_product = None
     for product in candidates:
         if not product.vram_gb:
             continue
@@ -104,6 +105,17 @@ def recommend_product(required_memory_gb, candidates):
                 "units_needed": units_needed,
                 "total_price": total_price,
             }
+            best_product = product
+
+    if best is None:
+        return None
+
+    stats = calculate_cluster_stats(best_product, best["units_needed"])
+    best["combined_vram_gb"] = stats["combined_vram_gb"]
+    best["combined_power_watts"] = stats["combined_power_watts"]
+    best["combined_power_context"] = humanize_power(stats["combined_power_watts"])
+    best["price_is_estimate"] = best_product.price_is_estimate
+    best["power_is_estimate"] = best_product.power_is_estimate
 
     return best
 

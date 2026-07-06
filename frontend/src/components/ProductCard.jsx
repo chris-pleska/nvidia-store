@@ -1,4 +1,5 @@
 import CategoryIcon from "./CategoryIcon.jsx";
+import EstimateBadge from "./EstimateBadge.jsx";
 import SpecTerm from "./SpecTerm.jsx";
 import { formatPowerComparison } from "../utils/formatPowerComparison.js";
 
@@ -17,6 +18,9 @@ export default function ProductCard({ product }) {
     power_context,
     vram_gb,
     description,
+    source_note,
+    price_is_estimate,
+    power_is_estimate,
   } = product;
 
   return (
@@ -29,17 +33,21 @@ export default function ProductCard({ product }) {
         </span>
       </div>
 
-      <p className="mt-2 text-2xl font-bold text-nvidia">
+      <p className="mt-2 flex items-center text-2xl font-bold text-nvidia">
         <SpecTerm term="price" value={currencyFormatter.format(price_usd)} />
+        {price_is_estimate && <EstimateBadge />}
       </p>
 
       <div className="mt-3 flex gap-6 text-sm text-neutral-400">
         <div>
           <span className="block text-neutral-500">Power</span>
-          <SpecTerm
-            term="power"
-            value={power_watts != null ? `${power_watts}W` : "—"}
-          />
+          <span className="inline-flex items-center">
+            <SpecTerm
+              term="power"
+              value={power_watts != null ? `${power_watts}W` : "—"}
+            />
+            {power_is_estimate && <EstimateBadge />}
+          </span>
           {power_context && (
             <p className="mt-0.5 text-xs leading-snug text-neutral-500">
               {formatPowerComparison(power_context)}
@@ -56,6 +64,12 @@ export default function ProductCard({ product }) {
       </div>
 
       <p className="mt-4 text-sm text-neutral-400">{description}</p>
+
+      {source_note && (
+        <p className="mt-3 border-t border-neutral-800 pt-3 text-xs text-neutral-500">
+          {source_note}
+        </p>
+      )}
     </div>
   );
 }

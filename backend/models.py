@@ -15,6 +15,9 @@ class Product(db.Model):
     description = db.Column(db.Text)
     image_url = db.Column(db.String(500))
     specs = db.Column(db.JSON)
+    source_note = db.Column(db.Text)
+    price_is_estimate = db.Column(db.Boolean, nullable=False, default=False)
+    power_is_estimate = db.Column(db.Boolean, nullable=False, default=False)
 
     def to_dict(self):
         return {
@@ -27,6 +30,9 @@ class Product(db.Model):
             "description": self.description,
             "image_url": self.image_url,
             "specs": self.specs,
+            "source_note": self.source_note,
+            "price_is_estimate": self.price_is_estimate,
+            "power_is_estimate": self.power_is_estimate,
         }
 
 
@@ -40,6 +46,7 @@ class OpenSourceModel(db.Model):
     param_count_billions = db.Column(db.Integer)
     context_window = db.Column(db.Integer)
     short_description = db.Column(db.Text)
+    source_note = db.Column(db.Text)
 
     def to_dict(self):
         return {
@@ -50,6 +57,7 @@ class OpenSourceModel(db.Model):
             "param_count_billions": self.param_count_billions,
             "context_window": self.context_window,
             "short_description": self.short_description,
+            "source_note": self.source_note,
             "required_memory_gb": (
                 round(self.param_count_billions * 1 * 1.2)
                 if self.param_count_billions is not None
