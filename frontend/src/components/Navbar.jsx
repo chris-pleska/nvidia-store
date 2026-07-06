@@ -6,7 +6,7 @@ const LINKS = [
   { label: "Shop", to: "/shop" },
   { label: "Model Advisor", to: "/model-advisor" },
   { label: "Help Me Choose", to: "/help-me-choose" },
-  { label: "Requests", to: null },
+  { label: "Requests", to: "/requests" },
 ];
 
 export default function Navbar() {

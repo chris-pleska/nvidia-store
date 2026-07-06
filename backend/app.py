@@ -2,13 +2,13 @@ import math
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 from sqlalchemy import text
 
 from extensions import db
-from models import OpenSourceModel, Product
+from models import OpenSourceModel, Product, QuoteRequest
 
 # Only single-GPU products are viable build recommendations — multi-GPU
 # aggregates like "Rack System" or "Server" would trivially "win" on unit
@@ -183,6 +183,44 @@ def recommend_midsize():
             "cluster_explainer": CLUSTER_EXPLAINER,
         }
     )
+
+
+QUOTE_REQUEST_REQUIRED_FIELDS = [
+    "customer_name",
+    "customer_contact",
+    "build_description",
+    "total_price_usd",
+]
+
+
+@app.route("/api/quote-requests", methods=["GET"])
+def list_quote_requests():
+    quote_requests = QuoteRequest.query.order_by(QuoteRequest.created_at.desc()).all()
+    return jsonify([qr.to_dict() for qr in quote_requests])
+
+
+@app.route("/api/quote-requests", methods=["POST"])
+def create_quote_request():
+    data = request.get_json(silent=True) or {}
+
+    missing = [field for field in QUOTE_REQUEST_REQUIRED_FIELDS if not data.get(field)]
+    if missing:
+        return jsonify({"error": f"missing required fields: {', '.join(missing)}"}), 400
+
+    next_number = 1000 + QuoteRequest.query.count() + 1
+    request_number = f"REQ-{next_number:04d}"
+
+    quote_request = QuoteRequest(
+        request_number=request_number,
+        customer_name=data["customer_name"],
+        customer_contact=data["customer_contact"],
+        build_description=data["build_description"],
+        total_price_usd=data["total_price_usd"],
+    )
+    db.session.add(quote_request)
+    db.session.commit()
+
+    return jsonify(quote_request.to_dict()), 201
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from extensions import db
 
 
@@ -53,4 +55,31 @@ class OpenSourceModel(db.Model):
                 if self.param_count_billions is not None
                 else None
             ),
+        }
+
+
+class QuoteRequest(db.Model):
+    __tablename__ = "quote_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    request_number = db.Column(db.String(20), unique=True, nullable=False)
+    customer_name = db.Column(db.String(200), nullable=False)
+    customer_contact = db.Column(db.String(200), nullable=False)
+    build_description = db.Column(db.Text, nullable=False)
+    total_price_usd = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "request_number": self.request_number,
+            "customer_name": self.customer_name,
+            "customer_contact": self.customer_contact,
+            "build_description": self.build_description,
+            "total_price_usd": (
+                float(self.total_price_usd)
+                if self.total_price_usd is not None
+                else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

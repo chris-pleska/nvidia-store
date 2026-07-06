@@ -73,6 +73,49 @@ PRODUCTS = [
             "memory_architecture": "unified",
         },
     ),
+    dict(
+        name="NVIDIA RTX 5090 Laptop GPU",
+        category="Laptop GPU",
+        price_usd=3999.00,
+        power_watts=175,
+        vram_gb=24,
+        description=(
+            "NVIDIA's flagship mobile GPU, sold only pre-installed in "
+            "gaming/creator laptops rather than as a standalone card — price "
+            "reflects a representative laptop configuration, not the chip "
+            "alone."
+        ),
+        image_url=None,
+        specs={"memory_type": "GDDR7"},
+    ),
+    dict(
+        name="NVIDIA H200",
+        category="Datacenter GPU",
+        price_usd=38000.00,
+        power_watts=700,
+        vram_gb=141,
+        description=(
+            "A memory-upgraded version of the H100 on the same architecture, "
+            "built for large language models that need more than 80GB per "
+            "GPU."
+        ),
+        image_url=None,
+        specs={"memory_type": "HBM3e"},
+    ),
+    dict(
+        name="NVIDIA B200",
+        category="Datacenter GPU",
+        price_usd=47000.00,
+        power_watts=1000,
+        vram_gb=180,
+        description=(
+            "NVIDIA's current-generation Blackwell datacenter GPU, roughly 4x "
+            "the AI training throughput of the H100 with native FP4 "
+            "precision support."
+        ),
+        image_url=None,
+        specs={"memory_type": "HBM3e"},
+    ),
 ]
 
 

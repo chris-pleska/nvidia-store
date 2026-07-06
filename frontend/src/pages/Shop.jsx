@@ -7,6 +7,7 @@ const PRODUCTS_URL = `${API_BASE_URL}/api/products`;
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => {
     fetch(PRODUCTS_URL)
@@ -20,6 +21,12 @@ export default function Shop() {
       })
       .catch(() => setStatus("error"));
   }, []);
+
+  const sortedProducts = [...products].sort((a, b) =>
+    sortDirection === "asc"
+      ? a.price_usd - b.price_usd
+      : b.price_usd - a.price_usd,
+  );
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -42,11 +49,33 @@ export default function Shop() {
       )}
 
       {status === "loaded" && products.length > 0 && (
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              onClick={() =>
+                setSortDirection((current) =>
+                  current === "asc" ? "desc" : "asc",
+                )
+              }
+              className="inline-flex items-center gap-2 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-300 transition-colors hover:border-nvidia/50"
+            >
+              Sort by price:{" "}
+              <span className="font-medium text-nvidia">
+                {sortDirection === "asc" ? "Low to High" : "High to Low"}
+              </span>
+              <span className="text-nvidia">
+                {sortDirection === "asc" ? "↑" : "↓"}
+              </span>
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {sortedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
