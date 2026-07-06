@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar.jsx";
 import Compare from "./pages/Compare.jsx";
 import HelpMeChoose from "./pages/HelpMeChoose.jsx";
 import Home from "./pages/Home.jsx";
+import Learn from "./pages/Learn.jsx";
 import ModelAdvisor from "./pages/ModelAdvisor.jsx";
 import Requests from "./pages/Requests.jsx";
 import RequestQuote from "./pages/RequestQuote.jsx";
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/requests" element={<Requests />} />
         <Route path="/request-quote" element={<RequestQuote />} />
         <Route path="/compare" element={<Compare />} />
+        <Route path="/learn" element={<Learn />} />
       </Routes>
       <HelpWidget />
     </div>

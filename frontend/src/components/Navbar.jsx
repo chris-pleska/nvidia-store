@@ -8,6 +8,7 @@ const LINKS = [
   { label: "Help Me Choose", to: "/help-me-choose" },
   { label: "Requests", to: "/requests" },
   { label: "Compare", to: "/compare" },
+  { label: "Learn", to: "/learn" },
 ];
 
 export default function Navbar() {
