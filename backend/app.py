@@ -1,6 +1,10 @@
+import json
 import math
 import os
+import time
+from collections import defaultdict
 
+import anthropic
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -47,7 +51,30 @@ CLUSTER_EXPLAINER = {
     ),
 }
 
+RATE_LIMIT_WINDOW_SECONDS = 60
+RATE_LIMIT_MAX_REQUESTS = 5
+_rate_limit_hits = defaultdict(list)
+
+
+def check_rate_limit(client_ip):
+    now = time.time()
+    hits = _rate_limit_hits[client_ip]
+    cutoff = now - RATE_LIMIT_WINDOW_SECONDS
+
+    while hits and hits[0] < cutoff:
+        hits.pop(0)
+
+    if len(hits) >= RATE_LIMIT_MAX_REQUESTS:
+        return False
+
+    hits.append(now)
+    return True
+
+
 load_dotenv()
+
+# Reads ANTHROPIC_API_KEY from the environment automatically.
+anthropic_client = anthropic.Anthropic()
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
@@ -67,6 +94,299 @@ def health():
 def db_check():
     db.session.execute(text("SELECT 1"))
     return jsonify({"database": "connected"})
+
+
+@app.route("/api/ai-test")
+def ai_test():
+    message = anthropic_client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=64,
+        messages=[{"role": "user", "content": "Say hello in 5 words"}],
+    )
+    return jsonify({"response": message.content[0].text})
+
+
+def build_ai_recommend_system_prompt(products, models):
+    catalog = [
+        {
+            "name": product.name,
+            "category": product.category,
+            "price_usd": float(product.price_usd),
+            "vram_gb": product.vram_gb,
+            "power_watts": product.power_watts,
+        }
+        for product in products
+    ]
+
+    model_catalog = [
+        {
+            "name": model.name,
+            "param_count_billions": model.param_count_billions,
+            "required_memory_gb": model.to_dict()["required_memory_gb"],
+        }
+        for model in models
+    ]
+
+    return (
+        "You are a hardware recommendation assistant for an NVIDIA hardware "
+        "store. Here is the full product catalog, as JSON:\n\n"
+        f"{json.dumps(catalog, indent=2)}\n\n"
+        "Here is the catalog of open-source AI models customers might "
+        "mention, as JSON:\n\n"
+        f"{json.dumps(model_catalog, indent=2)}\n\n"
+        "Rules:\n"
+        "- Recommend ONLY products from this exact list. Never invent "
+        "products, specs, or prices that aren't in the catalog above.\n"
+        "- Use the exact \"name\" field from the catalog for every "
+        "recommended product.\n"
+        "- If multiple units of a product are needed, reflect that in the "
+        "\"quantity\" field.\n"
+        "- If the customer mentions running a specific AI model, the "
+        "combined VRAM of your recommended products MUST meet or exceed "
+        "that model's required_memory_gb (params × 1GB × 1.2). Never "
+        "recommend a build with less total VRAM than the model requires. "
+        "Only Datacenter GPU and Rack System products are appropriate for "
+        "models requiring more than 96GB.\n"
+        "- Among builds that meet the memory requirement, prefer the one "
+        "with the lowest total price. Do not claim a build is the most "
+        "cost-effective unless it actually has the lowest total price "
+        "among valid options.\n"
+        "- Briefly explain the recommendation in plain language a "
+        "non-technical buyer would understand.\n"
+        "- Respond with ONLY a single strict JSON object in exactly this "
+        "shape, no markdown formatting, code fences, or extra text before "
+        "or after it:\n"
+        '{"recommended_products": [{"name": "...", "quantity": N}], '
+        '"reasoning": "...", "total_price": N}'
+    )
+
+
+def required_memory_gb_of(model):
+    if model.param_count_billions is None:
+        return None
+    return round(model.param_count_billions * 1 * 1.2)
+
+
+def find_matched_model(prompt, models):
+    prompt_lower = prompt.lower()
+    matches = [model for model in models if model.name.lower() in prompt_lower]
+    if not matches:
+        return None
+    return max(matches, key=lambda model: len(model.name))
+
+
+def combined_vram_of(recommended_products, catalog_by_name):
+    total = 0
+    for item in recommended_products:
+        product = catalog_by_name[item["name"]]
+        total += (product.vram_gb or 0) * int(item["quantity"])
+    return total
+
+
+def extract_json_object(text):
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+    return text.strip()
+
+
+def parse_and_validate_recommendation(raw_text, catalog_by_name):
+    try:
+        data = json.loads(extract_json_object(raw_text))
+    except (json.JSONDecodeError, TypeError):
+        return None, "response was not valid JSON"
+
+    if not isinstance(data, dict):
+        return None, "response was not a JSON object"
+
+    products = data.get("recommended_products")
+    if not isinstance(products, list) or len(products) == 0:
+        return None, "recommended_products was missing or empty"
+
+    for item in products:
+        if not isinstance(item, dict) or "name" not in item or "quantity" not in item:
+            return None, "a recommended product entry was malformed"
+        if item["name"] not in catalog_by_name:
+            return None, f"unknown product name: {item['name']!r}"
+        quantity = item["quantity"]
+        if not isinstance(quantity, (int, float)) or quantity <= 0:
+            return None, f"invalid quantity for {item['name']!r}"
+
+    if not isinstance(data.get("reasoning"), str) or not data["reasoning"].strip():
+        return None, "reasoning was missing or empty"
+
+    return data, None
+
+
+@app.route("/api/ai-recommend", methods=["POST"])
+def ai_recommend():
+    if not check_rate_limit(request.remote_addr):
+        return (
+            jsonify(
+                {
+                    "error": (
+                        f"Rate limit exceeded — max {RATE_LIMIT_MAX_REQUESTS} "
+                        f"requests per {RATE_LIMIT_WINDOW_SECONDS} seconds."
+                    )
+                }
+            ),
+            429,
+        )
+
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt")
+    if not prompt or not isinstance(prompt, str):
+        return jsonify({"error": "missing required field: prompt"}), 400
+
+    products = Product.query.all()
+    models = OpenSourceModel.query.all()
+    catalog_by_name = {product.name: product for product in products}
+    system_prompt = build_ai_recommend_system_prompt(products, models)
+    matched_model = find_matched_model(prompt, models)
+    matched_model_required_gb = (
+        required_memory_gb_of(matched_model) if matched_model else None
+    )
+
+    deterministic_baseline = None
+    if matched_model is not None:
+        candidates = Product.query.filter(
+            Product.category.in_(RECOMMENDATION_CANDIDATE_CATEGORIES)
+        ).all()
+        deterministic_baseline = recommend_product(
+            matched_model_required_gb, candidates
+        )
+
+    def ask_claude(user_content):
+        message = anthropic_client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_content}],
+        )
+        return message.content[0].text
+
+    def check_model_fit(parsed_data):
+        if parsed_data is None or matched_model is None:
+            return None
+
+        combined_vram = combined_vram_of(
+            parsed_data["recommended_products"], catalog_by_name
+        )
+        if combined_vram < matched_model_required_gb:
+            return (
+                f"the recommended build only has {combined_vram}GB combined "
+                f"VRAM, but {matched_model.name} requires at least "
+                f"{matched_model_required_gb}GB"
+            )
+
+        if deterministic_baseline is not None:
+            ai_total_price = sum(
+                float(catalog_by_name[item["name"]].price_usd) * int(item["quantity"])
+                for item in parsed_data["recommended_products"]
+            )
+            if ai_total_price > deterministic_baseline["total_price"]:
+                return (
+                    f"the recommended build costs ${ai_total_price:,.0f}, but "
+                    f"a cheaper option that also meets the "
+                    f"{matched_model_required_gb}GB requirement exists: "
+                    f"{deterministic_baseline['units_needed']}x "
+                    f"{deterministic_baseline['product_name']} for "
+                    f"${deterministic_baseline['total_price']:,.0f}"
+                )
+
+        return None
+
+    raw_response = ask_claude(prompt)
+    parsed, error = parse_and_validate_recommendation(raw_response, catalog_by_name)
+    fit_error = check_model_fit(parsed)
+
+    if parsed is None or fit_error:
+        retry_reason = error or fit_error
+        retry_prompt = (
+            f"{prompt}\n\n"
+            f"Your previous response was invalid: {retry_reason}. Respond "
+            "again with ONLY the strict JSON object described in the "
+            "system prompt, using exact product names from the catalog, "
+            "make sure the combined VRAM meets the mentioned model's "
+            "required_memory_gb, and use the cheapest valid option."
+        )
+        raw_response = ask_claude(retry_prompt)
+        parsed, error = parse_and_validate_recommendation(raw_response, catalog_by_name)
+        fit_error = check_model_fit(parsed)
+
+    if parsed is None:
+        return (
+            jsonify({"error": f"AI recommendation failed validation: {error}"}),
+            502,
+        )
+
+    if fit_error and matched_model is not None:
+        fallback = deterministic_baseline
+
+        if fallback is None:
+            return (
+                jsonify(
+                    {
+                        "error": (
+                            "no viable product found to meet "
+                            f"{matched_model.name}'s VRAM requirement"
+                        )
+                    }
+                ),
+                502,
+            )
+
+        return jsonify(
+            {
+                "recommended_products": [
+                    {
+                        "name": fallback["product_name"],
+                        "quantity": fallback["units_needed"],
+                        "price_usd": float(
+                            catalog_by_name[fallback["product_name"]].price_usd
+                        ),
+                        "subtotal": fallback["total_price"],
+                    }
+                ],
+                "reasoning": (
+                    "The AI's recommendation didn't meet our bar for "
+                    f"{matched_model.name} (needs at least "
+                    f"{matched_model_required_gb}GB combined VRAM at the "
+                    "lowest valid price). Falling back to our deterministic "
+                    f"recommendation: {fallback['units_needed']}x "
+                    f"{fallback['product_name']} provides "
+                    f"{fallback['combined_vram_gb']}GB combined VRAM for "
+                    f"${fallback['total_price']:,.0f}."
+                ),
+                "total_price": fallback["total_price"],
+            }
+        )
+
+    recommended_products = []
+    total_price = 0.0
+    for item in parsed["recommended_products"]:
+        product = catalog_by_name[item["name"]]
+        quantity = int(item["quantity"])
+        subtotal = float(product.price_usd) * quantity
+        total_price += subtotal
+        recommended_products.append(
+            {
+                "name": product.name,
+                "quantity": quantity,
+                "price_usd": float(product.price_usd),
+                "subtotal": subtotal,
+            }
+        )
+
+    return jsonify(
+        {
+            "recommended_products": recommended_products,
+            "reasoning": parsed["reasoning"],
+            "total_price": total_price,
+        }
+    )
 
 
 @app.route("/api/products")
