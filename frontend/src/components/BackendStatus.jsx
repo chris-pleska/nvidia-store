@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../config.js";
 const HEALTH_URL = `${API_BASE_URL}/api/health`;
 
 export default function BackendStatus() {
-  const [status, setStatus] = useState("checking");
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     fetch(HEALTH_URL)
@@ -12,21 +12,16 @@ export default function BackendStatus() {
         if (!res.ok) throw new Error("bad response");
         return res.json();
       })
-      .then((data) => setStatus(data.status === "ok" ? "connected" : "error"))
-      .catch(() => setStatus("disconnected"));
+      .then((data) => setIsOffline(data.status !== "ok"))
+      .catch(() => setIsOffline(true));
   }, []);
 
-  const dotColor =
-    status === "connected"
-      ? "bg-nvidia"
-      : status === "checking"
-        ? "bg-neutral-500"
-        : "bg-red-500";
+  if (!isOffline) return null;
 
   return (
-    <div className="flex items-center gap-2 text-sm text-neutral-400">
-      <span className={`h-2 w-2 rounded-full ${dotColor}`} />
-      backend: {status}
+    <div className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-red-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      backend offline
     </div>
   );
 }

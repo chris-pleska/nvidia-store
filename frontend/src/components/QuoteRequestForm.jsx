@@ -73,9 +73,15 @@ export default function QuoteRequestForm({ build }) {
         <p className="mt-1 text-base font-medium text-neutral-100">
           {build.description}
         </p>
-        <p className="mt-1 text-lg font-bold text-nvidia">
-          {currencyFormatter.format(build.totalPrice)}
-        </p>
+        {build.totalPrice > 0 ? (
+          <p className="mt-1 text-lg font-bold text-nvidia">
+            {currencyFormatter.format(build.totalPrice)}
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-neutral-500">
+            Pricing to be confirmed
+          </p>
+        )}
       </div>
 
       <div className="mt-4">

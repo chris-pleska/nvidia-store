@@ -99,12 +99,6 @@ const SECTIONS = [
     link: { to: "/help-me-choose", label: "Help Me Choose" },
   },
   {
-    slug: "clusters",
-    label: "What's a Cluster?",
-    Icon: RackSystemIcon,
-    isClusterSection: true,
-  },
-  {
     slug: "cooling",
     label: "Cooling",
     Icon: CoolingIcon,
@@ -114,6 +108,12 @@ const SECTIONS = [
       "All those watts become heat. Desktops use fans; dense AI racks generate so much heat that they're liquid-cooled — pipes carry coolant directly to the chips.",
     whenItMatters:
       "Cooling is why you can't just stack datacenter GPUs in a closet — the GB200 rack in our shop dissipates as much heat as several dozen space heaters.",
+  },
+  {
+    slug: "clusters",
+    label: "What's a Cluster?",
+    Icon: RackSystemIcon,
+    isClusterSection: true,
   },
 ];
 
@@ -200,6 +200,10 @@ export default function Learn() {
               {isClusterSection ? (
                 clusterExplainer ? (
                   <>
+                    <p className="mt-4 text-sm italic text-neutral-500">
+                      Everything above describes one machine. A cluster is
+                      what you get when you connect many of them.
+                    </p>
                     <p className="mt-4 font-semibold text-neutral-100">
                       {clusterExplainer.definition}
                     </p>

@@ -189,7 +189,17 @@ def extract_json_object(text):
         text = text.strip("`")
         if text.lower().startswith("json"):
             text = text[4:]
-    return text.strip()
+        text = text.strip()
+
+    # Claude sometimes "thinks out loud" before the JSON object despite
+    # instructions not to — pull out just the {...} span rather than
+    # assuming the whole response is clean JSON.
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return text[start : end + 1]
+
+    return text
 
 
 def parse_and_validate_recommendation(raw_text, catalog_by_name):
@@ -310,7 +320,9 @@ def ai_recommend():
             "again with ONLY the strict JSON object described in the "
             "system prompt, using exact product names from the catalog, "
             "make sure the combined VRAM meets the mentioned model's "
-            "required_memory_gb, and use the cheapest valid option."
+            "required_memory_gb, and use the cheapest valid option. Do not "
+            "show your calculations or reasoning outside the JSON object — "
+            "output the JSON object and nothing else."
         )
         raw_response = ask_claude(retry_prompt)
         parsed, error = parse_and_validate_recommendation(raw_response, catalog_by_name)
