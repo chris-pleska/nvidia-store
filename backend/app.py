@@ -14,10 +14,11 @@ from sqlalchemy import text
 from extensions import db
 from models import OpenSourceModel, Product, QuoteRequest
 
-# Only single-GPU products are viable build recommendations — multi-GPU
-# aggregates like "Rack System" or "Server" would trivially "win" on unit
-# count (e.g. 1x rack always beats Nx individual GPUs) regardless of cost.
-RECOMMENDATION_CANDIDATE_CATEGORIES = ["Datacenter GPU"]
+# Categories eligible as build recommendations. recommend_product() below
+# always picks by lowest total cost to meet the memory requirement, so
+# multi-GPU racks only win when they're genuinely the cheapest option for
+# the required memory — never merely because they need fewer units.
+RECOMMENDATION_CANDIDATE_CATEGORIES = ["Datacenter GPU", "Rack System"]
 
 HOME_CONTINUOUS_DRAW_WATTS = 1200
 EV_BATTERY_KWH = 90
@@ -429,8 +430,8 @@ def recommend_product(required_memory_gb, candidates):
 
         if (
             best is None
-            or units_needed < best["units_needed"]
-            or (units_needed == best["units_needed"] and total_price < best["total_price"])
+            or total_price < best["total_price"]
+            or (total_price == best["total_price"] and units_needed < best["units_needed"])
         ):
             best = {
                 "product_name": product.name,
@@ -491,6 +492,18 @@ def recommend_startup():
                 "center needed."
             ),
             "total_price": float(product.price_usd),
+            "good_for": [
+                "Local prototyping and experimentation without touching a "
+                "data center.",
+                "Fast inference for small models — chatbots, RAG, and "
+                "agents.",
+                "Low ops burden: plugs into a normal office outlet, no "
+                "special cooling.",
+            ],
+            "not_built_for": [
+                "Not enough VRAM to run 100B+ parameter models.",
+                "Not meant to serve many concurrent production users.",
+            ],
         }
     )
 
@@ -526,6 +539,61 @@ def recommend_midsize():
             **stats,
             "combined_power_context": humanize_power(stats["combined_power_watts"]),
             "cluster_explainer": CLUSTER_EXPLAINER,
+            "good_for": [
+                "Running large open-source models (100B+ parameters) in "
+                "production.",
+                "Fine-tuning large models in-house, not just running "
+                "pre-trained ones.",
+                "Serving multiple concurrent workloads or teams at once.",
+            ],
+            "not_built_for": [
+                "Not enough combined VRAM for the largest "
+                "trillion-parameter-class frontier models.",
+                "Needs real data center power and cooling, not a normal "
+                "office.",
+            ],
+        }
+    )
+
+
+@app.route("/api/recommend/enterprise")
+def recommend_enterprise():
+    product = Product.query.filter_by(name="NVIDIA GB200 NVL72").first()
+    if product is None:
+        return jsonify({"error": "recommended product not found"}), 404
+
+    quantity = 1
+    stats = calculate_cluster_stats(product, quantity)
+
+    product_data = product.to_dict()
+    product_data["power_context"] = humanize_power(product_data["power_watts"])
+
+    return jsonify(
+        {
+            "product": product_data,
+            "quantity": quantity,
+            "rationale": (
+                "Unified memory across all 72 GPUs to run "
+                "trillion-parameter-class models, delivered as a single "
+                "vendor-installed system."
+            ),
+            **stats,
+            "combined_power_context": humanize_power(stats["combined_power_watts"]),
+            "cluster_explainer": CLUSTER_EXPLAINER,
+            "good_for": [
+                "Running trillion-parameter-class frontier models thanks "
+                "to unified memory across all 72 GPUs.",
+                "Training and serving at data center scale from one "
+                "vendor-installed system.",
+                "Maximum headroom — today's largest open models fit "
+                "comfortably, with room to grow.",
+            ],
+            "not_built_for": [
+                "Massive overkill — and cost — for prototyping or small "
+                "workloads.",
+                "Requires dedicated data center space, power, and liquid "
+                "cooling.",
+            ],
         }
     )
 

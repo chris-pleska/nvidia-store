@@ -9,6 +9,11 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+function vramPerThousandDollars(gpuMemoryGb, price) {
+  if (gpuMemoryGb == null || !price) return null;
+  return (gpuMemoryGb / price) * 1000;
+}
+
 function productToItem(product) {
   return {
     key: `product-${product.id}`,
@@ -22,6 +27,7 @@ function productToItem(product) {
     homesEquivalent: product.power_context?.homes_equivalent ?? null,
     machineLabel: "Single machine",
     isCluster: false,
+    vramPerThousand: vramPerThousandDollars(product.vram_gb, product.price_usd),
   };
 }
 
@@ -42,8 +48,100 @@ function modelToBuildItem(model) {
     machineLabel:
       rec.units_needed === 1 ? "Single machine" : `Cluster of ${rec.units_needed}`,
     isCluster: rec.units_needed > 1,
+    vramPerThousand: vramPerThousandDollars(rec.combined_vram_gb, rec.total_price),
   };
 }
+
+function computeBestKeys(items, valueFn, direction) {
+  if (!valueFn) return new Set();
+  const entries = items
+    .map((item) => ({ key: item.key, value: valueFn(item) }))
+    .filter((entry) => entry.value != null);
+  if (entries.length === 0) return new Set();
+
+  const best =
+    direction === "max"
+      ? Math.max(...entries.map((entry) => entry.value))
+      : Math.min(...entries.map((entry) => entry.value));
+
+  return new Set(
+    entries.filter((entry) => entry.value === best).map((entry) => entry.key),
+  );
+}
+
+const COMPARISON_ROWS = [
+  {
+    key: "price",
+    label: "Price",
+    best: "min",
+    value: (item) => item.price,
+    render: (item) => (
+      <>
+        {currencyFormatter.format(item.price)}
+        {item.priceIsEstimate && <EstimateBadge />}
+      </>
+    ),
+  },
+  {
+    key: "memory",
+    label: "GPU Memory",
+    best: "max",
+    value: (item) => item.gpuMemoryGb,
+    render: (item) =>
+      item.gpuMemoryGb != null ? `${item.gpuMemoryGb}GB` : "—",
+  },
+  {
+    key: "power",
+    label: "Power Draw",
+    best: "min",
+    value: (item) => item.powerWatts,
+    render: (item) => (
+      <>
+        {item.powerWatts != null ? `${item.powerWatts}W` : "—"}
+        {item.powerIsEstimate && <EstimateBadge />}
+      </>
+    ),
+  },
+  {
+    key: "everyday",
+    label: "Everyday Terms",
+    best: "min",
+    value: (item) => item.homesEquivalent,
+    render: (item) =>
+      item.homesEquivalent != null
+        ? `~${item.homesEquivalent} average homes`
+        : "—",
+  },
+  {
+    key: "machine",
+    label: "Machine / Cluster",
+    best: null,
+    value: null,
+    render: (item) => (
+      <>
+        {item.machineLabel}
+        {item.isCluster && (
+          <Link
+            to="/learn#clusters"
+            className="mt-1 block text-xs text-nvidia hover:underline"
+          >
+            What's a cluster?
+          </Link>
+        )}
+      </>
+    ),
+  },
+  {
+    key: "vram-per-dollar",
+    label: "GB of VRAM per $1,000",
+    best: "max",
+    value: (item) => item.vramPerThousand,
+    render: (item) =>
+      item.vramPerThousand != null
+        ? `${item.vramPerThousand.toFixed(1)}GB`
+        : "—",
+  },
+];
 
 export default function Compare() {
   const [productItems, setProductItems] = useState([]);
@@ -182,54 +280,60 @@ export default function Compare() {
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-neutral-800 bg-neutral-900 text-neutral-500">
-                    <th className="px-4 py-3 font-medium">Item</th>
-                    <th className="px-4 py-3 font-medium">Price</th>
-                    <th className="px-4 py-3 font-medium">GPU Memory</th>
-                    <th className="px-4 py-3 font-medium">Power Draw</th>
-                    <th className="px-4 py-3 font-medium">In Everyday Terms</th>
-                    <th className="px-4 py-3 font-medium">
-                      Single Machine or Cluster?
+                    <th className="sticky left-0 z-10 bg-neutral-900 px-4 py-3 font-medium">
+                      Spec
                     </th>
+                    {comparedItems.map((item) => (
+                      <th
+                        key={item.key}
+                        className="px-4 py-3 font-medium text-neutral-100"
+                      >
+                        {item.itemLabel}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {comparedItems.map((item) => (
-                    <tr
-                      key={item.key}
-                      className="border-b border-neutral-800 bg-neutral-900/50 last:border-b-0"
-                    >
-                      <td className="px-4 py-3 font-medium text-neutral-100">
-                        {item.itemLabel}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-100">
-                        {currencyFormatter.format(item.price)}
-                        {item.priceIsEstimate && <EstimateBadge />}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-400">
-                        {item.gpuMemoryGb != null ? `${item.gpuMemoryGb}GB` : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-400">
-                        {item.powerWatts != null ? `${item.powerWatts}W` : "—"}
-                        {item.powerIsEstimate && <EstimateBadge />}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-400">
-                        {item.homesEquivalent != null
-                          ? `~${item.homesEquivalent} average homes`
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-400">
-                        {item.machineLabel}
-                        {item.isCluster && (
-                          <Link
-                            to="/learn#clusters"
-                            className="ml-1.5 text-xs text-nvidia hover:underline"
-                          >
-                            What's a cluster?
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {COMPARISON_ROWS.map((row) => {
+                    const bestKeys = computeBestKeys(
+                      comparedItems,
+                      row.value,
+                      row.best,
+                    );
+                    const showHighlight = bestKeys.size < comparedItems.length;
+
+                    return (
+                      <tr
+                        key={row.key}
+                        className="border-b border-neutral-800 bg-neutral-900/50 last:border-b-0"
+                      >
+                        <td className="sticky left-0 z-10 bg-neutral-900 px-4 py-3 font-medium text-neutral-100">
+                          {row.label}
+                        </td>
+                        {comparedItems.map((item) => {
+                          const isBest =
+                            showHighlight && bestKeys.has(item.key);
+                          return (
+                            <td
+                              key={item.key}
+                              className={`px-4 py-3 ${
+                                isBest
+                                  ? "bg-nvidia/10 font-semibold text-nvidia"
+                                  : "text-neutral-400"
+                              }`}
+                            >
+                              {row.render(item)}
+                              {isBest && (
+                                <span className="ml-1.5 inline-flex items-center rounded-full border border-nvidia/40 bg-nvidia/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-nvidia">
+                                  Best
+                                </span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

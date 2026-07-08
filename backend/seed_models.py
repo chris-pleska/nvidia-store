@@ -51,6 +51,41 @@ MODELS = [
             "parameters and an MIT license."
         ),
     ),
+    dict(
+        name="Kimi K2.6",
+        developer_lab="Moonshot AI",
+        license="Modified MIT",
+        param_count_billions=1000,
+        context_window=262_144,
+        short_description=(
+            "Moonshot AI's flagship open-weight agentic model: a "
+            "1-trillion-parameter mixture-of-experts built for "
+            "long-horizon coding and multi-agent orchestration, matching "
+            "frontier closed models on coding benchmarks."
+        ),
+        source_note=(
+            "The official Hugging Face model card "
+            "(huggingface.co/moonshotai/Kimi-K2.6) lists 1T total "
+            "parameters (32B active) under a Modified MIT license."
+        ),
+    ),
+    dict(
+        name="Qwen3.5-397B-A17B",
+        developer_lab="Alibaba (Qwen)",
+        license="Apache 2.0",
+        param_count_billions=397,
+        context_window=262_144,
+        short_description=(
+            "Alibaba's flagship open-weight multimodal model: 397B total "
+            "parameters activating only 17B per token, delivering "
+            "frontier-level reasoning and vision at low inference cost, "
+            "in 201 languages."
+        ),
+        source_note=(
+            "Model card (huggingface.co/Qwen) lists 397B total parameters "
+            "(17B active) under Apache 2.0."
+        ),
+    ),
 ]
 
 

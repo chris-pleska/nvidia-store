@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SpecTerm from "../components/SpecTerm.jsx";
 import { API_BASE_URL } from "../config.js";
 import { formatPowerComparison } from "../utils/formatPowerComparison.js";
+import renderJargon from "../utils/renderJargon.jsx";
 
 const PATHS = [
   {
@@ -17,6 +18,12 @@ const PATHS = [
     title: "I'm a mid-size company",
     subtitle: "Serve real production workloads with room to grow.",
     endpoint: `${API_BASE_URL}/api/recommend/midsize`,
+  },
+  {
+    key: "enterprise",
+    title: "I'm a large company / enterprise",
+    subtitle: "Datacenter-scale, frontier-model capacity, single system.",
+    endpoint: `${API_BASE_URL}/api/recommend/enterprise`,
   },
 ];
 
@@ -57,7 +64,7 @@ export default function HelpMeChoose() {
         Tell us where you're starting from, and we'll recommend a build.
       </p>
 
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PATHS.map((path) => (
           <button
             key={path.key}
@@ -134,6 +141,42 @@ export default function HelpMeChoose() {
           </div>
 
           <p className="mt-4 text-sm text-neutral-400">{result.rationale}</p>
+
+          {(result.good_for?.length > 0 || result.not_built_for?.length > 0) && (
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {result.good_for?.length > 0 && (
+                <div className="rounded-md border border-nvidia/30 bg-nvidia/5 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-nvidia">
+                    What this build is good at
+                  </p>
+                  <ul className="mt-2 flex flex-col gap-1.5 text-sm text-neutral-300">
+                    {result.good_for.map((bullet) => (
+                      <li key={bullet} className="flex gap-2">
+                        <span className="text-nvidia">+</span>
+                        <span>{renderJargon(bullet)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.not_built_for?.length > 0 && (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+                    What it's NOT built for
+                  </p>
+                  <ul className="mt-2 flex flex-col gap-1.5 text-sm text-neutral-300">
+                    {result.not_built_for.map((bullet) => (
+                      <li key={bullet} className="flex gap-2">
+                        <span className="text-amber-400">−</span>
+                        <span>{renderJargon(bullet)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           <p className="mt-4 text-2xl font-bold text-nvidia">
             Total: {currencyFormatter.format(result.total_price)}

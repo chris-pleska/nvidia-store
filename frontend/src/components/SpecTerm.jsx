@@ -44,6 +44,34 @@ const SPEC_INFO = {
     deep:
       "MIT is one of the most permissive licenses in use — unlike some other open licenses, it doesn't require you to share your changes back or restrict commercial use.",
   },
+  inference: {
+    label: "Inference",
+    short:
+      "Running an already-trained model to get an answer — as opposed to training it. This is what happens every time you send a message to a chatbot.",
+    deep:
+      "Inference is far cheaper than training, but still needs enough VRAM to hold the whole model at once — that's the number this page is built around.",
+  },
+  finetuning: {
+    label: "Fine-Tuning",
+    short:
+      "Taking an existing trained model and further training it on your own data, instead of training a model from scratch.",
+    deep:
+      "Fine-tuning needs meaningfully more memory and compute than just running (inference) the same model, since it also has to store gradients and optimizer state alongside the weights.",
+  },
+  "unified-memory": {
+    label: "Unified Memory",
+    short:
+      "Many GPUs wired together (via NVLink) so they share one large memory pool instead of each being limited to its own.",
+    deep:
+      "This is what lets a rack like the GB200 NVL72 run a single model far larger than any individual GPU's memory — the combined pool, not any one chip, is the real ceiling.",
+  },
+  "liquid-cooling": {
+    label: "Liquid Cooling",
+    short:
+      "Coolant piped directly to the chips instead of fans blowing air — needed when a system generates more heat than air can carry away.",
+    deep:
+      "Dense racks like the GB200 NVL72 can dissipate as much heat as dozens of space heaters running at once — only manageable with liquid cooling and real data center infrastructure.",
+  },
 };
 
 const EDGE_MARGIN = 12;

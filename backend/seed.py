@@ -155,6 +155,95 @@ PRODUCTS = [
         source_note="Specs per NVIDIA's datasheet; price is a market estimate.",
         price_is_estimate=True,
     ),
+    dict(
+        name="NVIDIA GB300 NVL72",
+        category="Rack System",
+        price_usd=4000000.00,
+        power_watts=135000,
+        vram_gb=20736,
+        description=(
+            "NVIDIA's current flagship rack: 72 Blackwell Ultra GPUs and "
+            "36 Grace CPUs acting as one machine, with 21TB of pooled "
+            "memory — built for the largest AI models in existence."
+        ),
+        image_url=None,
+        specs={
+            "gpu_count": 72,
+            "gpu_model": "Blackwell Ultra (B300)",
+            "cpu_count": 36,
+            "cooling": "liquid",
+            "memory_architecture": "unified",
+            "memory_per_gpu_gb": 288,
+            "interconnect": "5th-gen NVLink",
+        },
+        source_note=(
+            "Specs per NVIDIA's GB300 NVL72 page and partner datasheets "
+            "(72x 288GB HBM3e = ~21TB pooled, 5th-gen NVLink, "
+            "liquid-cooled); price and power are market estimates — these "
+            "systems are quoted per-deal."
+        ),
+        price_is_estimate=True,
+        power_is_estimate=True,
+    ),
+    dict(
+        name="NVIDIA RTX 5080",
+        category="Desktop GPU",
+        price_usd=999.00,
+        power_watts=360,
+        vram_gb=16,
+        description=(
+            "The sensible flagship: excellent 4K gaming and light AI work "
+            "at half the price of the 5090. The card to get if the 5090 is "
+            "overkill for you."
+        ),
+        image_url=None,
+        specs={"memory_type": "GDDR7"},
+        source_note=(
+            "Specs per NVIDIA's product page; $999 is NVIDIA's MSRP — "
+            "street prices currently run $1,200-1,300 due to memory "
+            "shortages."
+        ),
+    ),
+    dict(
+        name="NVIDIA RTX 5080 Laptop GPU",
+        category="Laptop GPU",
+        price_usd=3200.00,
+        power_watts=175,
+        vram_gb=16,
+        description=(
+            "The step-down mobile flagship: strong gaming and creative "
+            "performance in thinner, cheaper laptops than the 5090 tier. "
+            "Sold only inside laptops."
+        ),
+        image_url=None,
+        specs={"memory_type": "GDDR7"},
+        source_note=(
+            "Specs per NVIDIA's mobile GPU page; price reflects a "
+            "representative laptop configuration — market range roughly "
+            "$2,500-5,000 depending on the laptop."
+        ),
+        price_is_estimate=True,
+    ),
+    dict(
+        name="NVIDIA DGX B200",
+        category="Server",
+        price_usd=450000.00,
+        power_watts=10200,
+        vram_gb=1440,
+        description=(
+            "The current-generation 8-GPU AI server: one box with more "
+            "than double the memory of the DGX H100, built around "
+            "Blackwell GPUs."
+        ),
+        image_url=None,
+        specs={"gpu_count": 8, "gpu_model": "B200"},
+        source_note=(
+            "Specs per NVIDIA's DGX B200 datasheet; price is a market "
+            "estimate — reported system sales range $300,000-600,000 "
+            "depending on configuration and support contracts."
+        ),
+        price_is_estimate=True,
+    ),
 ]
 
 
