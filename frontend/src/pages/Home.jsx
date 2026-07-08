@@ -37,15 +37,21 @@ export default function Home() {
       <section className="relative overflow-hidden bg-[radial-gradient(circle_at_50%_0%,rgba(118,185,0,0.14),transparent_60%)]">
         <main className="flex flex-col items-center justify-center px-6 py-16 text-center">
           <h1 className="text-4xl font-bold">
-            Welcome to{" "}
-            <span className="text-nvidia">Chris's Silicon Supply Co.</span>
+            From gaming rig to{" "}
+            <span className="text-nvidia">AI datacenter</span> — choose your
+            side.
           </h1>
           <p className="mt-4 max-w-2xl text-neutral-400">
-            We sell real NVIDIA hardware, from single consumer GPUs to full
-            datacenter racks. If you're not sure what you need, we'll help
-            you figure out the right hardware to run specific open-source AI
-            models, with guided recommendations built for startups and
-            mid-size companies alike.
+            Real NVIDIA hardware at every scale — with the specs translated
+            into plain English, the memory math done in the open, and
+            honest advice on what to buy. Not sure where you land?{" "}
+            <Link
+              to="/help-me-choose"
+              className="text-nvidia hover:underline"
+            >
+              We'll help you choose
+            </Link>
+            .
           </p>
         </main>
       </section>

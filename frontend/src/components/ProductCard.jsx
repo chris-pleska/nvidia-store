@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext.jsx";
 import CategoryIcon from "./CategoryIcon.jsx";
 import EstimateBadge from "./EstimateBadge.jsx";
 import SpecTerm from "./SpecTerm.jsx";
@@ -23,6 +25,21 @@ export default function ProductCard({ product }) {
     price_is_estimate,
     power_is_estimate,
   } = product;
+
+  const { addItem } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
+  const flashTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(flashTimeoutRef.current);
+  }, []);
+
+  function handleAddToBag() {
+    addItem(product);
+    setJustAdded(true);
+    clearTimeout(flashTimeoutRef.current);
+    flashTimeoutRef.current = setTimeout(() => setJustAdded(false), 1200);
+  }
 
   return (
     <div className="flex flex-col rounded-lg border border-neutral-800 bg-neutral-900 p-5 transition-colors hover:border-nvidia/50">
@@ -74,6 +91,18 @@ export default function ProductCard({ product }) {
           What's a cluster?
         </Link>
       )}
+
+      <button
+        type="button"
+        onClick={handleAddToBag}
+        className={`mt-4 rounded-md px-4 py-2 font-semibold transition-colors ${
+          justAdded
+            ? "bg-nvidia/70 text-neutral-950"
+            : "bg-nvidia text-neutral-950 hover:opacity-90"
+        }`}
+      >
+        {justAdded ? "✓ Added to Bag" : "Add to Bag"}
+      </button>
 
       {source_note && (
         <p className="mt-3 border-t border-neutral-800 pt-3 text-xs text-neutral-500">

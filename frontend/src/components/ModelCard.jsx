@@ -16,6 +16,8 @@ export default function ModelCard({ model }) {
     required_memory_gb,
     recommended_product,
     source_note,
+    about_developer,
+    best_for,
   } = model;
 
   return (
@@ -24,6 +26,11 @@ export default function ModelCard({ model }) {
         <div>
           <h3 className="text-lg font-semibold text-neutral-100">{name}</h3>
           <p className="text-sm text-neutral-500">{developer_lab}</p>
+          {about_developer && (
+            <p className="mt-1 text-xs leading-snug text-neutral-500">
+              {about_developer}
+            </p>
+          )}
         </div>
         <span className="whitespace-nowrap rounded-full border border-nvidia/40 bg-nvidia/10 px-2 py-1 text-xs font-medium text-nvidia">
           <SpecTerm term="license" value={license} />
@@ -55,7 +62,14 @@ export default function ModelCard({ model }) {
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-neutral-800 bg-neutral-950 p-3">
+      {best_for && (
+        <p className="mt-4 text-sm leading-snug text-neutral-300">
+          <span className="font-medium text-nvidia">Best for:</span>{" "}
+          {best_for}
+        </p>
+      )}
+
+      <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-950 p-3">
         <p className="text-xs uppercase tracking-wide text-neutral-500">
           Recommended Build
         </p>

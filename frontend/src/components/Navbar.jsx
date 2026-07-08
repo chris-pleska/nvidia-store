@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext.jsx";
 import BackendStatus from "./BackendStatus.jsx";
 import GuidesDropdown from "./GuidesDropdown.jsx";
+import BagIcon from "./icons/BagIcon.jsx";
+import LogoMark from "./icons/LogoMark.jsx";
 
 const GUIDE_LINKS = [
   { label: "Model Advisor", to: "/model-advisor" },
@@ -16,8 +19,19 @@ const NAV_LINK_CLASS =
 const CTA_CLASS =
   "whitespace-nowrap rounded-md bg-nvidia px-3 py-1.5 font-semibold text-neutral-950 transition-opacity hover:opacity-90";
 
+function BagBadge({ count }) {
+  if (count <= 0) return null;
+  return (
+    <span className="absolute -right-2 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-nvidia px-1 text-[10px] font-bold text-neutral-950">
+      {count}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { totalUnits } = useCart();
+  const bagLabel = `View bag${totalUnits > 0 ? ` (${totalUnits} item${totalUnits === 1 ? "" : "s"})` : ""}`;
 
   return (
     <nav className="border-b border-neutral-800 bg-neutral-950">
@@ -25,9 +39,10 @@ export default function Navbar() {
         <Link
           to="/"
           onClick={() => setMobileOpen(false)}
-          className="shrink-0 whitespace-nowrap text-base font-semibold text-nvidia sm:text-lg"
+          className="group flex min-w-0 items-center gap-2 text-base font-semibold text-nvidia sm:text-lg"
         >
-          Chris's Silicon Supply Co.
+          <LogoMark size={30} className="logo-mark-spin shrink-0" />
+          <span className="truncate">Chris's Silicon Supply Co.</span>
         </Link>
 
         {/* Desktop nav */}
@@ -51,6 +66,16 @@ export default function Navbar() {
                 Request a Quote
               </Link>
             </li>
+            <li>
+              <Link
+                to="/bag"
+                aria-label={bagLabel}
+                className="relative flex shrink-0 items-center text-neutral-300 transition-colors hover:text-nvidia"
+              >
+                <BagIcon size={24} />
+                <BagBadge count={totalUnits} />
+              </Link>
+            </li>
           </ul>
 
           <div className="flex items-center gap-4">
@@ -63,6 +88,17 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
+
+        {/* Mobile-only bag icon, always visible next to the hamburger */}
+        <Link
+          to="/bag"
+          onClick={() => setMobileOpen(false)}
+          aria-label={bagLabel}
+          className="relative flex shrink-0 items-center p-2 text-neutral-300 hover:text-nvidia md:hidden"
+        >
+          <BagIcon size={22} />
+          <BagBadge count={totalUnits} />
+        </Link>
 
         {/* Mobile hamburger toggle */}
         <button
@@ -144,6 +180,15 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
               >
                 Request a Quote
+              </Link>
+            </li>
+            <li className="pt-1">
+              <Link
+                to="/bag"
+                className={NAV_LINK_CLASS}
+                onClick={() => setMobileOpen(false)}
+              >
+                Bag{totalUnits > 0 ? ` (${totalUnits})` : ""}
               </Link>
             </li>
             <li className="pt-1">

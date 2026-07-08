@@ -3,3 +3,37 @@
 @theme {
   --color-nvidia: #76b900;
 }
+
+@keyframes nudge-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-6px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-nudge-bounce {
+    animation: nudge-bounce 0.6s ease-in-out 3;
+  }
+}
+
+@keyframes logo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .logo-mark-spin {
+    animation: logo-spin 3s linear infinite;
+  }
+}

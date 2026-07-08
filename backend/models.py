@@ -47,6 +47,8 @@ class OpenSourceModel(db.Model):
     context_window = db.Column(db.Integer)
     short_description = db.Column(db.Text)
     source_note = db.Column(db.Text)
+    about_developer = db.Column(db.Text)
+    best_for = db.Column(db.Text)
 
     def to_dict(self):
         return {
@@ -58,6 +60,8 @@ class OpenSourceModel(db.Model):
             "context_window": self.context_window,
             "short_description": self.short_description,
             "source_note": self.source_note,
+            "about_developer": self.about_developer,
+            "best_for": self.best_for,
             "required_memory_gb": (
                 round(self.param_count_billions * 1 * 1.2)
                 if self.param_count_billions is not None

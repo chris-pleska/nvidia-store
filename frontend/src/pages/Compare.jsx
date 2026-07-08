@@ -28,6 +28,9 @@ function productToItem(product) {
     machineLabel: "Single machine",
     isCluster: false,
     vramPerThousand: vramPerThousandDollars(product.vram_gb, product.price_usd),
+    isBuild: false,
+    modelName: null,
+    requiredMemoryGb: null,
   };
 }
 
@@ -49,6 +52,9 @@ function modelToBuildItem(model) {
       rec.units_needed === 1 ? "Single machine" : `Cluster of ${rec.units_needed}`,
     isCluster: rec.units_needed > 1,
     vramPerThousand: vramPerThousandDollars(rec.combined_vram_gb, rec.total_price),
+    isBuild: true,
+    modelName: model.name,
+    requiredMemoryGb: model.required_memory_gb,
   };
 }
 
@@ -143,6 +149,52 @@ const COMPARISON_ROWS = [
   },
 ];
 
+const BUILD_CONTEXT_ROWS = [
+  {
+    key: "runs-model",
+    label: "Runs Which Model?",
+    best: null,
+    value: null,
+    render: (item) =>
+      item.isBuild && item.modelName
+        ? `${item.modelName} — needs ${item.requiredMemoryGb}GB`
+        : "—",
+  },
+  {
+    key: "memory-headroom",
+    label: "Memory Headroom",
+    best: "max",
+    value: (item) =>
+      item.isBuild && item.gpuMemoryGb != null && item.requiredMemoryGb != null
+        ? item.gpuMemoryGb - item.requiredMemoryGb
+        : null,
+    render: (item) => {
+      if (
+        !item.isBuild ||
+        item.gpuMemoryGb == null ||
+        item.requiredMemoryGb == null
+      ) {
+        return "—";
+      }
+      const headroom = item.gpuMemoryGb - item.requiredMemoryGb;
+      return `${headroom >= 0 ? "+" : ""}${headroom}GB spare`;
+    },
+  },
+];
+
+const MACHINE_ROW_INDEX = COMPARISON_ROWS.findIndex(
+  (row) => row.key === "machine",
+);
+
+function getDisplayedRows(hasBuildSelected) {
+  if (!hasBuildSelected) return COMPARISON_ROWS;
+  return [
+    ...COMPARISON_ROWS.slice(0, MACHINE_ROW_INDEX + 1),
+    ...BUILD_CONTEXT_ROWS,
+    ...COMPARISON_ROWS.slice(MACHINE_ROW_INDEX + 1),
+  ];
+}
+
 export default function Compare() {
   const [productItems, setProductItems] = useState([]);
   const [buildItems, setBuildItems] = useState([]);
@@ -189,9 +241,17 @@ export default function Compare() {
     setComparedKeys(new Set(selectedKeys));
   }
 
+  function handleClearSelection() {
+    setSelectedKeys(new Set());
+    setComparedKeys(null);
+    setShowHint(false);
+  }
+
   const comparedItems = comparedKeys
     ? allItems.filter((item) => comparedKeys.has(item.key))
     : [];
+  const hasBuildSelected = comparedItems.some((item) => item.isBuild);
+  const displayedRows = getDisplayedRows(hasBuildSelected);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -261,13 +321,23 @@ export default function Compare() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCompare}
-            className="mt-6 rounded-md bg-nvidia px-5 py-2.5 font-semibold text-neutral-950 transition-opacity hover:opacity-90"
-          >
-            Compare selected
-          </button>
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleCompare}
+              className="rounded-md bg-nvidia px-5 py-2.5 font-semibold text-neutral-950 transition-opacity hover:opacity-90"
+            >
+              Compare selected
+            </button>
+            <button
+              type="button"
+              onClick={handleClearSelection}
+              disabled={selectedKeys.size === 0}
+              className="rounded-md border border-neutral-700 px-5 py-2.5 font-semibold text-neutral-300 transition-colors hover:border-nvidia/50 hover:text-nvidia disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-neutral-700 disabled:hover:text-neutral-300"
+            >
+              Clear selection
+            </button>
+          </div>
 
           {showHint && (
             <p className="mt-3 text-sm text-amber-400">
@@ -288,13 +358,27 @@ export default function Compare() {
                         key={item.key}
                         className="px-4 py-3 font-medium text-neutral-100"
                       >
-                        {item.itemLabel}
+                        {item.isBuild ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-sm font-semibold text-neutral-100">
+                              {item.modelName}
+                            </span>
+                            <span className="text-[10px] font-normal uppercase tracking-wide text-neutral-500">
+                              Minimum Build
+                            </span>
+                            <span className="mt-1 text-xs font-normal text-neutral-400">
+                              {item.itemLabel}
+                            </span>
+                          </div>
+                        ) : (
+                          item.itemLabel
+                        )}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {COMPARISON_ROWS.map((row) => {
+                  {displayedRows.map((row) => {
                     const bestKeys = computeBestKeys(
                       comparedItems,
                       row.value,

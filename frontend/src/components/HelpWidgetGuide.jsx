@@ -16,6 +16,7 @@ const STEPS = {
       { label: "I want to run AI models", next: "ai-models" },
       { label: "I'm buying for a company", next: "company" },
       { label: "I don't understand the terms on this site", next: "confused" },
+      { label: "What's the deal with power usage?", next: "power-usage" },
       { label: "I just want to browse", next: "browsing" },
     ],
   },
@@ -89,7 +90,8 @@ const STEPS = {
     question: "How big is the team?",
     options: [
       { label: "Small startup", next: "company-startup" },
-      { label: "Mid-size or bigger", next: "company-midsize" },
+      { label: "Mid-size", next: "company-midsize" },
+      { label: "Large company / enterprise", next: "company-enterprise" },
       { label: "We need a custom setup", next: "company-custom" },
     ],
   },
@@ -102,6 +104,11 @@ const STEPS = {
     type: "answer",
     text: "For a mid-size team, we'd point you to a small GPU cluster with room to grow — and explain what a real cluster actually is (not just plugging in a few desktop cards).",
     ctas: [{ label: "See the mid-size path", to: "/help-me-choose" }],
+  },
+  "company-enterprise": {
+    type: "answer",
+    text: "For a large company or enterprise, we'd point you to datacenter-scale — a single rack-sized system, delivered as one vendor-installed machine.",
+    ctas: [{ label: "See the enterprise path", to: "/help-me-choose" }],
   },
   "company-custom": {
     type: "answer",
@@ -147,7 +154,14 @@ const STEPS = {
     ctas: [{ label: "Go to Learn", to: "/learn" }],
   },
 
-  // Branch 5: browsing
+  // Branch 5: power usage
+  "power-usage": {
+    type: "answer",
+    text: "Every build shows watts translated into everyday terms — average homes and EV batteries — so the numbers actually mean something.",
+    ctas: [{ label: "Read more", to: "/learn#power-supply" }],
+  },
+
+  // Branch 6: browsing
   browsing: {
     type: "answer",
     text: "No pressure! Two good starting points:",
