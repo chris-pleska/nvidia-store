@@ -28,6 +28,33 @@ function BagBadge({ count }) {
   );
 }
 
+function NavbarLogo({ onClick }) {
+  return (
+    <Link
+      to="/"
+      onClick={onClick}
+      className="group flex min-w-0 items-center gap-2 text-base font-semibold text-nvidia sm:text-lg"
+    >
+      <LogoMark size={30} className="logo-mark-spin shrink-0" />
+      <span className="truncate">Chris's Silicon Supply Co.</span>
+    </Link>
+  );
+}
+
+function BagLink({ size = 24, onClick, totalUnits, bagLabel, className = "" }) {
+  return (
+    <Link
+      to="/bag"
+      onClick={onClick}
+      aria-label={bagLabel}
+      className={`relative flex shrink-0 items-center text-neutral-300 transition-colors hover:text-nvidia ${className}`}
+    >
+      <BagIcon size={size} />
+      <BagBadge count={totalUnits} />
+    </Link>
+  );
+}
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalUnits } = useCart();
@@ -35,19 +62,16 @@ export default function Navbar() {
 
   return (
     <nav className="border-b border-neutral-800 bg-neutral-950">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link
-          to="/"
-          onClick={() => setMobileOpen(false)}
-          className="group flex min-w-0 items-center gap-2 text-base font-semibold text-nvidia sm:text-lg"
-        >
-          <LogoMark size={30} className="logo-mark-spin shrink-0" />
-          <span className="truncate">Chris's Silicon Supply Co.</span>
-        </Link>
+      <div className="mx-auto max-w-6xl px-6 py-4">
+        {/* Desktop: three-zone grid — center nav is genuinely centered in
+            the bar since the two flanking columns share equal (1fr) space,
+            regardless of how wide the logo or action cluster are. */}
+        <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-4">
+          <div className="justify-self-start">
+            <NavbarLogo />
+          </div>
 
-        {/* Desktop nav */}
-        <div className="hidden flex-1 items-center justify-between md:flex">
-          <ul className="flex items-center gap-6">
+          <ul className="flex items-center justify-self-center gap-8">
             <li>
               <Link to="/" className={NAV_LINK_CLASS}>
                 Home
@@ -61,25 +85,14 @@ export default function Navbar() {
             <li>
               <GuidesDropdown />
             </li>
-            <li>
-              <Link to="/request-quote" className={CTA_CLASS}>
-                Request a Quote
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/bag"
-                aria-label={bagLabel}
-                className="relative flex shrink-0 items-center text-neutral-300 transition-colors hover:text-nvidia"
-              >
-                <BagIcon size={24} />
-                <BagBadge count={totalUnits} />
-              </Link>
-            </li>
           </ul>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-self-end gap-4">
             <BackendStatus />
+            <Link to="/request-quote" className={CTA_CLASS}>
+              Request a Quote
+            </Link>
+            <BagLink totalUnits={totalUnits} bagLabel={bagLabel} />
             <Link
               to="/requests"
               className="whitespace-nowrap text-sm text-neutral-500 transition-colors hover:text-neutral-300"
@@ -89,48 +102,51 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile-only bag icon, always visible next to the hamburger */}
-        <Link
-          to="/bag"
-          onClick={() => setMobileOpen(false)}
-          aria-label={bagLabel}
-          className="relative flex shrink-0 items-center p-2 text-neutral-300 hover:text-nvidia md:hidden"
-        >
-          <BagIcon size={22} />
-          <BagBadge count={totalUnits} />
-        </Link>
+        {/* Mobile row: logo, bag icon, hamburger */}
+        <div className="flex items-center justify-between gap-4 md:hidden">
+          <NavbarLogo onClick={() => setMobileOpen(false)} />
 
-        {/* Mobile hamburger toggle */}
-        <button
-          type="button"
-          aria-label="Toggle navigation menu"
-          aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen((prev) => !prev)}
-          className="flex items-center justify-center rounded-md p-2 text-neutral-300 hover:text-nvidia md:hidden"
-        >
-          <svg
-            className="h-6 w-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
-          >
-            {mobileOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
-              />
-            )}
-          </svg>
-        </button>
+          <div className="flex items-center gap-1">
+            <BagLink
+              size={22}
+              totalUnits={totalUnits}
+              bagLabel={bagLabel}
+              onClick={() => setMobileOpen(false)}
+              className="p-2"
+            />
+
+            <button
+              type="button"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="flex items-center justify-center rounded-md p-2 text-neutral-300 hover:text-nvidia"
+            >
+              <svg
+                className="h-6 w-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                aria-hidden="true"
+              >
+                {mobileOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile panel */}

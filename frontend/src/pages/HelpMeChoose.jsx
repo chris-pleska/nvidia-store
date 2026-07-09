@@ -1,31 +1,15 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import SpecTerm from "../components/SpecTerm.jsx";
+import { HELP_ME_CHOOSE_PATHS } from "../data/helpMeChoosePaths.js";
 import { API_BASE_URL } from "../config.js";
 import { formatPowerComparison } from "../utils/formatPowerComparison.js";
 import renderJargon from "../utils/renderJargon.jsx";
 
-const PATHS = [
-  {
-    key: "startup",
-    title: "I'm a small startup",
-    subtitle:
-      "Cost-effective way to experiment with AI, no huge upfront spend.",
-    endpoint: `${API_BASE_URL}/api/recommend/startup`,
-  },
-  {
-    key: "midsize",
-    title: "I'm a mid-size company",
-    subtitle: "Serve real production workloads with room to grow.",
-    endpoint: `${API_BASE_URL}/api/recommend/midsize`,
-  },
-  {
-    key: "enterprise",
-    title: "I'm a large company / enterprise",
-    subtitle: "Datacenter-scale, frontier-model capacity, single system.",
-    endpoint: `${API_BASE_URL}/api/recommend/enterprise`,
-  },
-];
+const PATHS = HELP_ME_CHOOSE_PATHS.map((path) => ({
+  ...path,
+  endpoint: `${API_BASE_URL}/api/recommend/${path.key}`,
+}));
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -34,14 +18,18 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 export default function HelpMeChoose() {
+  const [searchParams] = useSearchParams();
   const [selectedKey, setSelectedKey] = useState(null);
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("idle");
+  const resultRef = useRef(null);
+  const shouldScrollRef = useRef(false);
 
-  function handleSelect(path) {
+  function handleSelect(path, { scrollOnResult = false } = {}) {
     setSelectedKey(path.key);
     setStatus("loading");
     setResult(null);
+    shouldScrollRef.current = scrollOnResult;
 
     fetch(path.endpoint)
       .then((res) => {
@@ -54,6 +42,23 @@ export default function HelpMeChoose() {
       })
       .catch(() => setStatus("error"));
   }
+
+  useEffect(() => {
+    const requestedKey = searchParams.get("path");
+    const match = PATHS.find((path) => path.key === requestedKey);
+    if (match) {
+      handleSelect(match, { scrollOnResult: true });
+    }
+    // Only run once on mount, from the initial query param.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (status === "loaded" && shouldScrollRef.current && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      shouldScrollRef.current = false;
+    }
+  }, [status]);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -95,7 +100,10 @@ export default function HelpMeChoose() {
       )}
 
       {status === "loaded" && result && (
-        <div className="mt-8 rounded-lg border border-neutral-800 bg-neutral-900 p-6">
+        <div
+          ref={resultRef}
+          className="mt-8 scroll-mt-24 rounded-lg border border-neutral-800 bg-neutral-900 p-6"
+        >
           <p className="text-xs uppercase tracking-wide text-neutral-500">
             Recommended Build
           </p>
