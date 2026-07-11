@@ -60,6 +60,19 @@ export default function HelpMeChoose() {
     }
   }, [status]);
 
+  // Combined totals across all units — for quantity 1 (startup, enterprise)
+  // these equal the per-unit product values, since the backend only sends
+  // combined_* fields when it actually built a multi-unit cluster.
+  const displayPowerWatts = result
+    ? result.combined_power_watts ?? result.product.power_watts
+    : null;
+  const displayVramGb = result
+    ? result.combined_vram_gb ?? result.product.vram_gb
+    : null;
+  const displayPowerContext = result
+    ? result.combined_power_context ?? result.product.power_context
+    : null;
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="text-3xl font-bold">
@@ -124,14 +137,12 @@ export default function HelpMeChoose() {
               <SpecTerm
                 term="power"
                 value={
-                  result.product.power_watts != null
-                    ? `${result.product.power_watts}W`
-                    : "—"
+                  displayPowerWatts != null ? `${displayPowerWatts}W` : "—"
                 }
               />
-              {result.product.power_context && (
+              {displayPowerContext && (
                 <p className="mt-0.5 text-xs leading-snug text-neutral-500">
-                  {formatPowerComparison(result.product.power_context)}
+                  {formatPowerComparison(displayPowerContext)}
                 </p>
               )}
             </div>
@@ -139,11 +150,7 @@ export default function HelpMeChoose() {
               <span className="block text-neutral-500">VRAM</span>
               <SpecTerm
                 term="vram"
-                value={
-                  result.product.vram_gb != null
-                    ? `${result.product.vram_gb}GB`
-                    : "—"
-                }
+                value={displayVramGb != null ? `${displayVramGb}GB` : "—"}
               />
             </div>
           </div>
