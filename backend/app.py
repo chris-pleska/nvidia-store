@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import anthropic
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_migrate import Migrate
 from sqlalchemy import text
@@ -77,7 +77,17 @@ load_dotenv()
 # Reads ANTHROPIC_API_KEY from the environment automatically.
 anthropic_client = anthropic.Anthropic()
 
-app = Flask(__name__)
+# In production, the frontend is a static build served by this same Flask
+# process (no nginx on the deploy box) — in local dev this folder simply
+# doesn't exist yet, which is fine since Vite serves the frontend then.
+FRONTEND_DIST_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "dist"
+)
+
+# static_folder=None disables Flask's own automatic static route, which
+# would otherwise 404 on client-side routes like /shop before our catch-all
+# below ever gets a chance to fall back to index.html.
+app = Flask(__name__, static_folder=None)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
 
 CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
@@ -639,6 +649,30 @@ def create_quote_request():
     db.session.commit()
 
     return jsonify(quote_request.to_dict()), 201
+
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    if path.startswith("api/"):
+        return jsonify({"error": "not found"}), 404
+
+    full_path = os.path.join(FRONTEND_DIST_DIR, path)
+
+    # Real built assets (JS/CSS/favicon) are plain files.
+    if path and os.path.isfile(full_path):
+        return send_from_directory(FRONTEND_DIST_DIR, path)
+
+    # Prerendered routes are their own directory with an index.html
+    # (e.g. /shop -> dist/shop/index.html) — serve that directly so
+    # crawlers and curl see the real, already-rendered content.
+    prerendered_index = os.path.join(full_path, "index.html")
+    if path and os.path.isfile(prerendered_index):
+        return send_from_directory(full_path, "index.html")
+
+    # Anything else (the root route, or an unknown client-side path)
+    # falls back to the root shell so React Router can take it from there.
+    return send_from_directory(FRONTEND_DIST_DIR, "index.html")
 
 
 if __name__ == "__main__":
